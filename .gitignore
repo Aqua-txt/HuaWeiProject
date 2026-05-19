@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+env/
+vendor/
+
+# Build output
+dist/
+build/
+target/
+out/
+.next/
+.nuxt/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Temp & cache
+*.tmp
+*.temp
+*.cache
+__pycache__/
+.parcel-cache/
+.tsbuildinfo
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Package files (uncomment if needed)
+# *.zip
+# *.tar.gz
