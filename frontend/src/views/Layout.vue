@@ -41,6 +41,9 @@
                   <el-dropdown-item command="profile">
                     <el-icon><User /></el-icon>个人中心
                   </el-dropdown-item>
+                  <el-dropdown-item command="orders">
+                    <el-icon><List /></el-icon>我的订单
+                  </el-dropdown-item>
                   <el-dropdown-item command="myProducts">
                     <el-icon><Goods /></el-icon>我的发布
                   </el-dropdown-item>
@@ -79,6 +82,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../store'
 import { getUnreadCount } from '../api/chat'
+import { List } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -105,6 +109,7 @@ function handleCommand(cmd) {
   const routes = {
     logout: () => { userStore.logout(); router.push('/login') },
     profile: '/profile',
+    orders: '/orders',
     myProducts: '/my-products',
     myFavorites: '/my-favorites',
     editProfile: '/edit-profile',

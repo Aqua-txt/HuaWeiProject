@@ -22,11 +22,20 @@
           {{ cat.label }}
         </button>
       </div>
-      <el-select v-model="sort" style="width:168px" @change="doSearch" class="sort-select">
-        <el-option label="最新发布" value="latest" />
-        <el-option label="价格从低到高" value="price_asc" />
-        <el-option label="价格从高到低" value="price_desc" />
-      </el-select>
+      <div class="filter-actions">
+        <router-link to="/wanteds" class="wanted-link">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          求购专区
+        </router-link>
+        <el-select v-model="sort" style="width:168px" @change="doSearch" class="sort-select">
+          <el-option label="最新发布" value="latest" />
+          <el-option label="价格从低到高" value="price_asc" />
+          <el-option label="价格从高到低" value="price_desc" />
+        </el-select>
+      </div>
     </div>
 
     <!-- Product Grid -->
@@ -269,6 +278,33 @@ onMounted(() => { fetchProducts() })
 }
 
 .cat-emoji { font-size: 15px; }
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wanted-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(6,214,160,0.1), rgba(6,214,160,0.05));
+  color: var(--c-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+
+.wanted-link:hover {
+  background: var(--c-secondary);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6,214,160,0.3);
+}
 
 .sort-select :deep(.el-input__wrapper) {
   border-radius: 24px !important;
