@@ -48,6 +48,12 @@ __pycache__/
 coverage/
 .nyc_output/
 
+# Database
+*.db
+
+# Uploads
+backend/uploads/*
+
 # Package files (uncomment if needed)
 # *.zip
 # *.tar.gz

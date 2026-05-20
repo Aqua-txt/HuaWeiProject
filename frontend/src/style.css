@@ -1,0 +1,191 @@
+/* ===== Campus Spring Dawn — Design System ===== */
+:root {
+  --c-primary: #5B8DEF;
+  --c-primary-dark: #4A7BDB;
+  --c-primary-light: #EEF2FF;
+  --c-secondary: #06D6A0;
+  --c-accent: #FF6B6B;
+  --c-accent-warm: #FF9F43;
+  --c-bg: #EEF2F7;
+  --c-surface: #FFFFFF;
+  --c-surface-alt: #F7F9FB;
+  --c-text: #1A2332;
+  --c-text-secondary: #6B7B8D;
+  --c-text-muted: #98A8B8;
+  --c-border: #E3E8EF;
+  --c-shadow-sm: 0 1px 3px rgba(26,35,50,0.06);
+  --c-shadow-md: 0 4px 14px rgba(26,35,50,0.08);
+  --c-shadow-lg: 0 8px 30px rgba(26,35,50,0.10);
+  --c-shadow-glow: 0 4px 20px rgba(91,141,239,0.15);
+  --c-radius-sm: 8px;
+  --c-radius-md: 12px;
+  --c-radius-lg: 16px;
+  --c-radius-xl: 20px;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  --font-body: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", -apple-system, sans-serif;
+}
+
+/* ===== Global Reset ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--c-bg);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -40%;
+  right: -20%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(6,214,160,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -30%;
+  left: -15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(91,141,239,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; height: auto; }
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-text-muted); }
+
+/* ===== Element Plus Global Overrides ===== */
+:root {
+  --el-color-primary: var(--c-primary);
+  --el-color-primary-light-3: #7DA8F3;
+  --el-color-primary-light-5: #A3C2F7;
+  --el-color-primary-light-7: #C9DBFA;
+  --el-color-primary-light-8: #DCE9FC;
+  --el-color-primary-light-9: #EEF2FF;
+  --el-color-primary-dark-2: #4A7BDB;
+  --el-color-success: #06D6A0;
+  --el-color-warning: #FF9F43;
+  --el-color-danger: #FF6B6B;
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: 20px;
+  --el-box-shadow-light: var(--c-shadow-sm);
+  --el-box-shadow: var(--c-shadow-md);
+  --el-bg-color: var(--c-surface);
+  --el-bg-color-page: var(--c-bg);
+  --el-text-color-primary: var(--c-text);
+  --el-text-color-regular: var(--c-text-secondary);
+  --el-text-color-secondary: var(--c-text-muted);
+  --el-border-color: var(--c-border);
+  --el-border-color-light: var(--c-border);
+  --el-font-size-base: 14px;
+}
+
+.el-button {
+  border-radius: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, var(--c-primary), var(--c-primary-dark));
+  border: none;
+  box-shadow: 0 2px 8px rgba(91,141,239,0.3);
+}
+
+.el-button--primary:hover {
+  box-shadow: 0 4px 16px rgba(91,141,239,0.4);
+  transform: translateY(-1px);
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  transition: all 0.25s;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--c-primary-light) !important;
+}
+
+.el-input.is-focus .el-input__wrapper,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 2px rgba(91,141,239,0.2) !important;
+}
+
+.el-radio-button__inner {
+  border-radius: 8px !important;
+}
+
+.el-radio-group .el-radio-button:first-child .el-radio-button__inner {
+  border-radius: 8px !important;
+}
+
+.el-tag {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.el-dialog {
+  border-radius: var(--c-radius-xl);
+}
+
+.el-empty__description {
+  color: var(--c-text-muted);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: var(--c-primary) !important;
+}
+
+/* ===== Page Transitions ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
