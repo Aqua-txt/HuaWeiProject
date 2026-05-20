@@ -1,7 +1,6 @@
 <template>
   <div class="product-detail" v-loading="loading">
     <template v-if="product && !notFound">
-      <!-- Breadcrumb -->
       <div class="detail-breadcrumb">
         <router-link to="/home" class="bread-link">首页</router-link>
         <span class="bread-sep">/</span>
@@ -9,7 +8,6 @@
       </div>
 
       <div class="detail-top">
-        <!-- Images -->
         <div class="image-section">
           <div class="main-image-wrap">
             <el-image :src="currentImage" fit="cover" class="main-image">
@@ -36,7 +34,6 @@
           </div>
         </div>
 
-        <!-- Info -->
         <div class="info-section">
           <div class="info-tags">
             <span class="info-tag cat">{{ product.category }}</span>
@@ -60,17 +57,31 @@
             </span>
           </div>
 
-          <!-- Seller card -->
           <div class="seller-card">
             <div class="seller-profile">
               <el-avatar :size="52" :src="getAvatarUrl(product.seller_avatar)" class="seller-avatar" />
               <div class="seller-text">
                 <div class="seller-name">{{ product.seller_nickname }}</div>
-                <div class="seller-badge">认证校友</div>
+                <div class="seller-badges">
+                  <span class="seller-badge">认证校友</span>
+                  <span v-if="sellerCredit" class="credit-badge">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    {{ sellerCredit.toFixed(1) }}
+                  </span>
+                </div>
               </div>
             </div>
 
             <div class="seller-actions" v-if="!isOwner">
+              <button class="btn-buy" @click="handleBuy" :disabled="!userStore.isLoggedIn || product.status !== '上架'">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                立即购买
+              </button>
               <button class="btn-contact" @click="contactSeller" :disabled="!userStore.isLoggedIn">
                 <svg viewBox="0 0 20 20" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                   <path d="M18 2L10 10M18 2l-6 16-2-8-8-2 16-6z"/>
@@ -92,6 +103,16 @@
               <el-button v-else type="success" round @click="changeStatus('上架')">重新上架</el-button>
             </div>
           </div>
+
+          <div v-if="!isOwner && userStore.isLoggedIn" class="report-section">
+            <button class="btn-report" @click="openReportDialog">
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                <line x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
+              举报商品
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -103,16 +124,63 @@
         </template>
       </el-result>
     </div>
+
+    <el-dialog v-model="reportDialogVisible" title="举报商品" width="500px">
+      <el-form :model="reportForm" :rules="reportRules" ref="reportFormRef">
+        <el-form-item label="举报类型" prop="report_type">
+          <el-select v-model="reportForm.report_type" placeholder="请选择" style="width: 100%;">
+            <el-option label="虚假信息" value="虚假信息" />
+            <el-option label="违规商品" value="违规商品" />
+            <el-option label="诈骗行为" value="诈骗行为" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="举报描述" prop="description">
+          <el-input v-model="reportForm.description" type="textarea" :rows="3" placeholder="请详细描述问题(至少10字)" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="reportDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitReport">提交举报</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="payDialogVisible" title="确认订单" width="500px">
+      <div class="pay-order-summary">
+        <div class="pay-product">
+          <img :src="currentImage" class="pay-product-image" />
+          <div class="pay-product-info">
+            <h4>{{ product?.title }}</h4>
+            <p class="pay-price">¥{{ product?.price }}</p>
+          </div>
+        </div>
+        <el-divider />
+        <div class="pay-seller">
+          <span>卖家: {{ product?.seller_nickname }}</span>
+        </div>
+        <div class="pay-note">
+          <p>付款后请与卖家约定面交时间和地点,当面验货后确认收货。</p>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="payDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="processPayment" :loading="paying">
+          {{ paying ? '支付中...' : `确认支付 ¥${product?.price}` }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
 import { getProduct, toggleFavorite, updateProductStatus } from '../api/products'
 import { createConversation } from '../api/chat'
+import { createOrder, mockPayment } from '../api/order'
+import { createReport, checkReported } from '../api/report'
 import { useUserStore } from '../store'
 
 const route = useRoute()
@@ -124,6 +192,24 @@ const product = ref(null)
 const loading = ref(false)
 const notFound = ref(false)
 const currentIndex = ref(0)
+const reportDialogVisible = ref(false)
+const payDialogVisible = ref(false)
+const paying = ref(false)
+const reportFormRef = ref(null)
+const sellerCredit = ref(0)
+
+const reportForm = reactive({
+  report_type: '',
+  description: '',
+})
+
+const reportRules = {
+  report_type: [{ required: true, message: '请选择举报类型', trigger: 'change' }],
+  description: [
+    { required: true, message: '请填写举报描述', trigger: 'blur' },
+    { min: 10, message: '描述至少10个字符', trigger: 'blur' },
+  ],
+}
 
 const currentImage = computed(() => {
   if (!product.value?.images?.length) return ''
@@ -152,6 +238,7 @@ async function fetchProduct() {
     const res = await getProduct(route.params.id)
     if (res.data.status !== '上架') notFound.value = true
     product.value = res.data
+    sellerCredit.value = res.data.seller_credit_score || 0
   } catch {
     notFound.value = true
   } finally {
@@ -184,6 +271,71 @@ async function changeStatus(status) {
     product.value.status = status
     ElMessage.success(status === '已下架' ? '商品已下架' : '商品已重新上架')
   } catch {}
+}
+
+function handleBuy() {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
+  payDialogVisible.value = true
+}
+
+async function processPayment() {
+  paying.value = true
+  try {
+    const orderRes = await createOrder({
+      product_id: product.value.id,
+      seller_id: product.value.seller_id,
+      amount: product.value.price,
+    })
+    const orderId = orderRes.data.order_id
+    
+    await mockPayment({
+      order_id: orderId,
+      amount: product.value.price,
+    })
+    
+    ElMessage.success('支付成功')
+    payDialogVisible.value = false
+    router.push(`/orders/${orderId}`)
+  } catch (error) {
+    console.error('Payment failed:', error)
+  } finally {
+    paying.value = false
+  }
+}
+
+async function openReportDialog() {
+  try {
+    const res = await checkReported(product.value.id)
+    if (res.data.reported) {
+      ElMessage.warning('您已举报过该商品')
+      return
+    }
+    reportForm.report_type = ''
+    reportForm.description = ''
+    reportDialogVisible.value = true
+  } catch (error) {
+    console.error('Failed to check report:', error)
+  }
+}
+
+async function submitReport() {
+  const valid = await reportFormRef.value.validate().catch(() => false)
+  if (!valid) return
+  
+  try {
+    await createReport({
+      product_id: product.value.id,
+      report_type: reportForm.report_type,
+      description: reportForm.description,
+    })
+    ElMessage.success('举报已提交')
+    reportDialogVisible.value = false
+  } catch (error) {
+    console.error('Failed to submit report:', error)
+  }
 }
 
 onMounted(() => { fetchProduct() })
@@ -396,19 +548,60 @@ onMounted(() => { fetchProduct() })
 .seller-name {
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+}
+
+.seller-badges {
+  display: flex;
+  gap: 8px;
 }
 
 .seller-badge {
   font-size: 11px;
   color: var(--c-secondary);
   background: rgba(6,214,160,0.1);
-  padding: 1px 8px;
+  padding: 2px 8px;
   border-radius: 8px;
   font-weight: 600;
 }
 
-.seller-actions { display: flex; gap: 10px; }
+.credit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #F59E0B;
+  font-weight: 600;
+}
+
+.seller-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 2px 12px rgba(255,107,107,0.3);
+}
+
+.btn-buy:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255,107,107,0.4);
+}
+
+.btn-buy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .btn-contact {
   display: inline-flex;
@@ -453,5 +646,72 @@ onMounted(() => { fetchProduct() })
 .btn-fav.favorited { border-color: #FF6B6B; color: #FF6B6B; background: rgba(255,107,107,0.04); }
 .btn-fav:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.report-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--c-border);
+}
+
+.btn-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--c-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-report:hover {
+  color: var(--c-accent);
+}
+
 .off-shelf { padding: 60px 0; }
+
+.pay-order-summary {
+  padding: 8px 0;
+}
+
+.pay-product {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.pay-product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.pay-product-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pay-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #FF6B6B;
+}
+
+.pay-seller {
+  font-size: 14px;
+  color: var(--c-text-secondary);
+  margin-bottom: 16px;
+}
+
+.pay-note {
+  padding: 12px;
+  background: rgba(91,141,239,0.05);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  line-height: 1.6;
+}
 </style>

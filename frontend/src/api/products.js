@@ -31,3 +31,7 @@ export function toggleFavorite(id) {
 export function getFavorites(params) {
   return api.get('/api/favorites', { params })
 }
+
+export function getMyProducts(params) {
+  return api.get('/api/products/my', { params })
+}
