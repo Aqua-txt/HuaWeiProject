@@ -7,7 +7,10 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  const isAdminRequest = config.url?.startsWith('/admin')
+  const token = isAdminRequest 
+    ? localStorage.getItem('admin_token') 
+    : localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -25,9 +28,18 @@ api.interceptors.response.use(
     const msg = err.response?.data?.message || '网络异常，请稍后重试'
     ElMessage.error(msg)
     if (err.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      const isAdminRequest = err.config?.url?.startsWith('/admin')
+      if (isAdminRequest) {
+        localStorage.removeItem('admin_token')
+        localStorage.removeItem('admin_user')
+        if (window.location.pathname !== '/admin/login') {
+          window.location.href = '/admin/login'
+        }
+      } else {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(err)
   }

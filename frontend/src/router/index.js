@@ -169,6 +169,7 @@ router.beforeEach((to, from, next) => {
     if (!adminToken && to.path !== '/admin/login') {
       return next('/admin/login')
     }
+    return next()
   }
   
   if (to.meta.requiresAuth) {

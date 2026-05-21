@@ -144,7 +144,10 @@ async function fetchReports() {
   loading.value = true
   try {
     const res = await getAdminReports({ status: status.value })
-    reports.value = res.data.reports || []
+    reports.value = (res.data.reports || []).map(report => ({
+      ...report,
+      status: report.status === 'pending' ? 'pending' : 'handled'
+    }))
   } catch (error) {
     console.error('Failed to fetch reports:', error)
   } finally {

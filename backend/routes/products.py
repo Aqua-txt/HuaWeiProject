@@ -65,6 +65,36 @@ def list_products():
     })
 
 
+@products_bp.route('/api/products/my', methods=['GET'])
+@login_required
+def get_my_products():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    status = request.args.get('status', '').strip()
+    
+    query = Product.query.filter(Product.seller_id == g.current_user.id)
+    
+    if status:
+        query = query.filter(Product.status == status)
+    
+    pagination = query.order_by(Product.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    products = [p.to_dict() for p in pagination.items]
+    
+    return jsonify({
+        'code': 200,
+        'message': '获取成功',
+        'data': {
+            'products': products,
+            'total': pagination.total,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': pagination.pages,
+        }
+    })
+
+
 @products_bp.route('/api/products/<int:product_id>', methods=['GET'])
 @optional_login
 def get_product(product_id):
