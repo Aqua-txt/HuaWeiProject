@@ -1,0 +1,439 @@
+{
+  "results": [
+    {
+      "module": "认证",
+      "id": "TC-A01",
+      "title": "用户One登录",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "认证",
+      "id": "TC-A02",
+      "title": "用户Two登录",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "认证",
+      "id": "TC-A03",
+      "title": "错误密码登录被拒绝",
+      "status": "FAIL",
+      "detail": "resp_code=400"
+    },
+    {
+      "module": "认证",
+      "id": "TC-A04",
+      "title": "获取当前用户信息",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "认证",
+      "id": "TC-A05",
+      "title": "未登录访问受保护接口返回401",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "认证",
+      "id": "TC-A06",
+      "title": "重复学号注册被拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "商品",
+      "id": "TC-P01",
+      "title": "获取商品列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "商品",
+      "id": "TC-P02",
+      "title": "按分类筛选商品",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "商品",
+      "id": "TC-P03",
+      "title": "关键词搜索商品",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "商品",
+      "id": "TC-P04",
+      "title": "发布商品",
+      "status": "FAIL",
+      "detail": "{'code': 400, 'message': '请至少上传一张图片'}"
+    },
+    {
+      "module": "商品",
+      "id": "TC-P05",
+      "title": "获取商品详情",
+      "status": "FAIL",
+      "detail": "无商品ID"
+    },
+    {
+      "module": "商品",
+      "id": "TC-P07",
+      "title": "获取收藏列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "订单",
+      "id": "TC-O01",
+      "title": "创建订单",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "订单",
+      "id": "TC-O02",
+      "title": "不能购买自己的商品",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "订单",
+      "id": "TC-O03",
+      "title": "模拟支付",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'order': {'amount': 25.81, 'buyer_avatar': '', 'buyer_confirmed_at': None, 'buyer_id': 4, 'buyer_nickname': 'One', 'created_at': '2026-05-22T00:09:51.828209', 'id': 53, 'order_no': 'ORD20260522000951f9fa2f21', 'product_id': 5, 'product_images': ['2c7b536d4fa64344a457c9997a9dcf17.jpg'], 'product_price': 25.81, 'product_title': '高等数学（第七版）上下册', 'refund_reason': '', 'refund_status': '', 'seller_avatar': '', 'seller_confirmed_at': None, 'seller_id': 5, 'seller_nickname': 'Two', 'status': '已付款', 'updated_at': '2026-05-22T00:09:51.885750'}, 'payment': {'amount': 25.81, 'created_at': '2026-05-22T00:09:51.888707', 'id': 4, 'order_id': 53, 'pay_type': 'wechat', 'status': '成功', 'transaction_id': 'TXNb263b7a0c91243e6', 'user_id': 4}}, 'message': '支付成功'}"
+    },
+    {
+      "module": "订单",
+      "id": "TC-O04",
+      "title": "买方确认收货",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'amount': 25.81, 'buyer_avatar': '', 'buyer_confirmed_at': '2026-05-22T00:09:51.914722', 'buyer_id': 4, 'buyer_nickname': 'One', 'created_at': '2026-05-22T00:09:51.828209', 'id': 53, 'order_no': 'ORD20260522000951f9fa2f21', 'product_id': 5, 'product_images': ['2c7b536d4fa64344a457c9997a9dcf17.jpg'], 'product_price': 25.81, 'product_title': '高等数学（第七版）上下册', 'refund_reason': '', 'refund_status': '', 'seller_avatar': '', 'seller_confirmed_at': None, 'seller_id': 5, 'seller_nickname': 'Two', 'status': '已完成', 'updated_at': '2026-05-22T00:09:51.914732'}, 'message': '确认收货成功，货款已打给卖家'}"
+    },
+    {
+      "module": "订单",
+      "id": "TC-O05",
+      "title": "买方订单列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "订单",
+      "id": "TC-O06",
+      "title": "订单详情",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "订单",
+      "id": "TC-O07",
+      "title": "买方申请退款",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'amount': 289.64, 'buyer_avatar': '', 'buyer_confirmed_at': None, 'buyer_id': 4, 'buyer_nickname': 'One', 'created_at': '2026-05-22T00:09:52.042829', 'id': 54, 'order_no': 'ORD202605220009529e01dc0b', 'product_id': 6, 'product_images': ['d6c2827f5d6244d29cf8b1af983333f6.png'], 'product_price': 289.64, 'product_title': '罗技MX Master 3无线鼠标', 'refund_reason': '商品与描述不符需要退款处理', 'refund_status': '待处理', 'seller_avatar': '', 'seller_confirmed_at': None, 'seller_id': 5, 'seller_nickname': 'Two', 'status': '退款中', 'updated_at': '2026-05-22T00:09:52.099746'}, 'message': '退款申请已提交'}"
+    },
+    {
+      "module": "订单",
+      "id": "TC-O08",
+      "title": "卖方同意退款",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'amount': 289.64, 'buyer_avatar': '', 'buyer_confirmed_at': None, 'buyer_id': 4, 'buyer_nickname': 'One', 'created_at': '2026-05-22T00:09:52.042829', 'id': 54, 'order_no': 'ORD202605220009529e01dc0b', 'product_id': 6, 'product_images': ['d6c2827f5d6244d29cf8b1af983333f6.png'], 'product_price': 289.64, 'product_title': '罗技MX Master 3无线鼠标', 'refund_reason': '商品与描述不符需要退款处理', 'refund_status': '已同意', 'seller_avatar': '', 'seller_confirmed_at': None, 'seller_id': 5, 'seller_nickname': 'Two', 'status': '已退款', 'updated_at': '2026-05-22T00:09:52.121630'}, 'message': '退款已同意，款项已退回买家'}"
+    },
+    {
+      "module": "订单",
+      "id": "TC-O09",
+      "title": "卖方拒绝退款升级仲裁",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'amount': 289.64, 'buyer_avatar': '', 'buyer_confirmed_at': None, 'buyer_id': 4, 'buyer_nickname': 'One', 'created_at': '2026-05-22T00:09:52.142162', 'id': 55, 'order_no': 'ORD202605220009521914a847', 'product_id': 6, 'product_images': ['d6c2827f5d6244d29cf8b1af983333f6.png'], 'product_price': 289.64, 'product_title': '罗技MX Master 3无线鼠标', 'refund_reason': '测试拒绝退款然后升级仲裁流程', 'refund_status': '已拒绝', 'seller_avatar': '', 'seller_confirmed_at': None, 'seller_id': 5, 'seller_nickname': 'Two', 'status': '管理员仲裁', 'updated_at': '2026-05-22T00:09:52.222588'}, 'message': '退款已拒绝，等待管理员介入'}"
+    },
+    {
+      "module": "评价",
+      "id": "TC-R01",
+      "title": "评价已完成订单",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'comment': '交易顺利，好评！', 'communication_score': 5, 'created_at': '2026-05-22T00:09:52.242625', 'description_score': 4, 'id': 17, 'order_id': 53, 'order_no': 'ORD20260522000951f9fa2f21', 'overall_score': 4.5, 'reviewee_id': 5, 'reviewee_nickname': 'Two', 'reviewer_avatar': '', 'reviewer_id': 4, 'reviewer_nickname': 'One', 'speed_score': 5}, 'message': '评价成功'}"
+    },
+    {
+      "module": "评价",
+      "id": "TC-R02",
+      "title": "重复评价被拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "评价",
+      "id": "TC-R03",
+      "title": "检查订单可评价状态",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "评价",
+      "id": "TC-R04",
+      "title": "获取被评价者评价列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "举报",
+      "id": "TC-RP01",
+      "title": "提交举报",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'created_at': '2026-05-22T00:09:52.415839', 'description': '该商品信息与实际不符，请核查处理', 'handled_at': None, 'handler_note': '', 'id': 26, 'product_id': 38, 'product_seller_id': 2, 'product_seller_nickname': 'Asanagi', 'product_title': '95新大学英语教材第五册', 'report_type': '虚假信息', 'reporter_id': 5, 'reporter_nickname': 'Two', 'reporter_student_id': '2024302111002', 'status': '待处理'}, 'message': '举报提交成功'}"
+    },
+    {
+      "module": "举报",
+      "id": "TC-RP02",
+      "title": "重复举报被拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "举报",
+      "id": "TC-RP03",
+      "title": "举报描述少于10字被拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "举报",
+      "id": "TC-RP04",
+      "title": "获取我的举报列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W01",
+      "title": "发布求购",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W02",
+      "title": "获取求购列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W03",
+      "title": "求购详情含推荐商品",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W04",
+      "title": "响应求购",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'created_at': '2026-05-22T00:09:52.561812', 'id': 2, 'message': '我有一本，可面交', 'price_offer': 20.0, 'product_id': None, 'product_title': None, 'responder_avatar': '', 'responder_id': 5, 'responder_nickname': 'Two', 'wanted_id': 39}, 'message': '响应成功'}"
+    },
+    {
+      "module": "求购",
+      "id": "TC-W05",
+      "title": "不能响应自己的求购",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W06",
+      "title": "获取求购响应列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "求购",
+      "id": "TC-W07",
+      "title": "关闭求购",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD01",
+      "title": "管理员登录",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD02",
+      "title": "普通用户无法访问管理接口",
+      "status": "PASS",
+      "detail": "code=403"
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD03",
+      "title": "管理端举报列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD04",
+      "title": "管理员下架商品处理举报",
+      "status": "PASS",
+      "detail": "{'code': 200, 'data': {'created_at': '2026-05-22T00:09:52.415839', 'description': '该商品信息与实际不符，请核查处理', 'handled_at': '2026-05-22T00:09:52.825322', 'handler_note': '测试下架', 'id': 26, 'product_id': 38, 'product_seller_id': 2, 'product_seller_nickname': 'Asanagi', 'product_title': '95新大学英语教材第五册', 'report_type': '虚假信息', 'reporter_id': 5, 'reporter_nickname': 'Two', 'reporter_student_id': '2024302111002', 'status': '已处理'}, 'message': '处理成功'}"
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD05",
+      "title": "管理端商品列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD06",
+      "title": "管理端用户列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD07",
+      "title": "封禁用户",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD08",
+      "title": "数据看板",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "管理后台",
+      "id": "TC-AD09",
+      "title": "错误管理员密码被拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "聊天",
+      "id": "TC-C01",
+      "title": "获取会话列表",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "聊天",
+      "id": "TC-C02",
+      "title": "创建会话",
+      "status": "FAIL",
+      "detail": "{'code': 400, 'message': '参数不完整'}"
+    },
+    {
+      "module": "聊天",
+      "id": "TC-C03",
+      "title": "发送消息",
+      "status": "FAIL",
+      "detail": "前置失败"
+    },
+    {
+      "module": "聊天",
+      "id": "TC-C04",
+      "title": "获取消息列表",
+      "status": "FAIL",
+      "detail": "前置失败"
+    },
+    {
+      "module": "聊天",
+      "id": "TC-C05",
+      "title": "获取未读消息数",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "安全",
+      "id": "TC-S01",
+      "title": "SQL注入登录被拒绝",
+      "status": "PASS",
+      "detail": "code=400"
+    },
+    {
+      "module": "安全",
+      "id": "TC-S02",
+      "title": "XSS输入不执行脚本",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "安全",
+      "id": "TC-S03",
+      "title": "用户只能看到自己的订单",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "安全",
+      "id": "TC-S04",
+      "title": "无token访问保护接口被拒",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "module": "安全",
+      "id": "TC-S05",
+      "title": "普通token无法访问admin接口",
+      "status": "PASS",
+      "detail": "code=403"
+    }
+  ],
+  "summary": {
+    "认证": {
+      "pass": 5,
+      "fail": 1,
+      "skip": 0
+    },
+    "商品": {
+      "pass": 4,
+      "fail": 2,
+      "skip": 0
+    },
+    "订单": {
+      "pass": 9,
+      "fail": 0,
+      "skip": 0
+    },
+    "评价": {
+      "pass": 4,
+      "fail": 0,
+      "skip": 0
+    },
+    "举报": {
+      "pass": 4,
+      "fail": 0,
+      "skip": 0
+    },
+    "求购": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "管理后台": {
+      "pass": 9,
+      "fail": 0,
+      "skip": 0
+    },
+    "聊天": {
+      "pass": 2,
+      "fail": 3,
+      "skip": 0
+    },
+    "安全": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "total_pass": 49,
+  "total_fail": 6,
+  "total_skip": 0
+}
