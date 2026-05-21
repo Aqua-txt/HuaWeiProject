@@ -1,8 +1,9 @@
 import axios from 'axios'
+import { API_BASE_URL } from '../utils/url'
 import { ElMessage } from 'element-plus'
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000',
+  baseURL: API_BASE_URL,
   timeout: 10000,
 })
 
@@ -22,7 +23,10 @@ api.interceptors.response.use(
     return res.data
   },
   (err) => {
-    const msg = err.response?.data?.message || '网络异常，请稍后重试'
+    const msg =
+      err.code === 'ERR_NETWORK'
+        ? '无法连接后端服务，请先启动 backend/app.py'
+        : err.response?.data?.message || '网络异常，请稍后重试'
     ElMessage.error(msg)
     if (err.response?.status === 401) {
       localStorage.removeItem('token')

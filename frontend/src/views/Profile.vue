@@ -65,13 +65,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useUserStore } from '../store'
+import { getUploadUrl } from '../utils/url'
 
 const userStore = useUserStore()
-const baseUrl = 'http://127.0.0.1:5000'
 
 const avatarUrl = computed(() => {
   const avatar = userStore.user?.avatar
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 })
 </script>
 

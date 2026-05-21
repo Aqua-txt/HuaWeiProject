@@ -1,336 +1,308 @@
 <template>
-  <div class="dashboard-page">
-    <h1 class="page-title">数据看板</h1>
+  <div class="admin-dashboard">
+    <!-- Overview: Today -->
+    <el-row :gutter="20" class="overview">
+      <el-col :span="8">
+        <el-card shadow="hover" class="overview-card">
+          <div class="stat">
+            <div class="stat-value">{{ overview.today_orders ?? '-' }}</div>
+            <div class="stat-label">今日订单</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="overview-card">
+          <div class="stat">
+            <div class="stat-value">{{ overview.today_products ?? '-' }}</div>
+            <div class="stat-label">今日发布</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="overview-card">
+          <div class="stat">
+            <div class="stat-value">{{ overview.today_users ?? '-' }}</div>
+            <div class="stat-label">今日新增用户</div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>加载中...</p>
-    </div>
+    <!-- Overview: Totals -->
+    <el-row :gutter="20" style="margin-top: 20px">
+      <el-col :span="6">
+        <el-card shadow="hover" class="overview-card total-card">
+          <div class="stat">
+            <div class="stat-value total">{{ overview.total_products ?? '-' }}</div>
+            <div class="stat-label">商品总数</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="overview-card total-card">
+          <div class="stat">
+            <div class="stat-value total">{{ overview.total_users ?? '-' }}</div>
+            <div class="stat-label">用户总数</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="overview-card total-card">
+          <div class="stat">
+            <div class="stat-value total">{{ overview.total_orders ?? '-' }}</div>
+            <div class="stat-label">订单总数</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover" class="overview-card total-card">
+          <div class="stat">
+            <div class="stat-value total">{{ overview.paid_orders ?? '-' }}</div>
+            <div class="stat-label">已付款 / 已完成 {{ overview.completed_orders != null ? overview.completed_orders : '' }}</div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
-    <template v-else>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #5B8DEF, #4CC9F0);">
-            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="white" stroke-width="2">
-              <line x1="12" y1="1" x2="12" y2="23"/>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
-          <div class="stat-info">
-            <p class="stat-label">今日GMV</p>
-            <h3 class="stat-value">¥{{ stats.today_gmv?.toFixed(2) || '0.00' }}</h3>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #06D6A0, #05B894);">
-            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="white" stroke-width="2">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-            </svg>
-          </div>
-          <div class="stat-info">
-            <p class="stat-label">今日订单</p>
-            <h3 class="stat-value">{{ stats.today_orders || 0 }}</h3>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="white" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <line x1="3" y1="9" x2="21" y2="9"/>
-              <line x1="9" y1="21" x2="9" y2="9"/>
-            </svg>
-          </div>
-          <div class="stat-info">
-            <p class="stat-label">今日发布</p>
-            <h3 class="stat-value">{{ stats.today_products || 0 }}</h3>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #FF6B6B, #EE5A5A);">
-            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="white" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div class="stat-info">
-            <p class="stat-label">活跃用户</p>
-            <h3 class="stat-value">{{ stats.active_users || 0 }}</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="charts-grid">
-        <div class="chart-card">
-          <h3 class="chart-title">近30天交易趋势</h3>
-          <div class="chart-placeholder">
-            <p style="color: var(--c-text-muted);">图表区域</p>
-            <p style="font-size: 12px; color: var(--c-border); margin-top: 8px;">
-              可集成 ECharts/Chart.js 展示折线图
-            </p>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h3 class="chart-title">商品分类分布</h3>
-          <div class="chart-placeholder">
-            <p style="color: var(--c-text-muted);">图表区域</p>
-            <p style="font-size: 12px; color: var(--c-border); margin-top: 8px;">
-              可集成饼图展示分类占比
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="recent-section">
-        <div class="recent-card">
-          <h3 class="section-title">待处理举报</h3>
-          <div v-if="stats.pending_reports === 0" class="empty-text">
-            暂无待处理举报
-          </div>
-          <div v-else class="alert-badge">
-            {{ stats.pending_reports }} 条举报待处理
-          </div>
-          <router-link to="/admin/reports" class="view-link">查看全部 →</router-link>
-        </div>
-
-        <div class="recent-card">
-          <h3 class="section-title">交易漏斗</h3>
-          <div class="funnel">
-            <div class="funnel-item">
-              <span class="funnel-label">浏览</span>
-              <span class="funnel-value">{{ stats.funnel?.view || 0 }}</span>
+    <!-- Charts -->
+    <el-row :gutter="20" style="margin-top: 20px">
+      <el-col :span="16">
+        <el-card>
+          <template #header><span>近30天趋势</span></template>
+          <div class="trend-chart" v-if="trend.length">
+            <div class="chart-bars">
+              <div class="bar-group" v-for="(d, i) in trend" :key="i">
+                <div class="bars-row">
+                  <div class="bar products-bar" :style="{ height: barHeight(d.products, maxTrend) + 'px' }" :title="d.products + '件'"></div>
+                  <div class="bar orders-bar" :style="{ height: barHeight(d.orders, maxTrend) + 'px' }" :title="d.orders + '单'"></div>
+                  <div class="bar users-bar" :style="{ height: barHeight(d.users, maxTrend) + 'px' }" :title="d.users + '人'"></div>
+                </div>
+                <div class="bar-date">{{ d.date }}</div>
+              </div>
             </div>
-            <div class="funnel-item">
-              <span class="funnel-label">咨询</span>
-              <span class="funnel-value">{{ stats.funnel?.inquiry || 0 }}</span>
-            </div>
-            <div class="funnel-item">
-              <span class="funnel-label">付款</span>
-              <span class="funnel-value">{{ stats.funnel?.payment || 0 }}</span>
-            </div>
-            <div class="funnel-item">
-              <span class="funnel-label">完成</span>
-              <span class="funnel-value">{{ stats.funnel?.completed || 0 }}</span>
+            <div class="chart-legend">
+              <span><span class="dot" style="background:#5B8DEF"></span>发布</span>
+              <span><span class="dot" style="background:#06D6A0"></span>订单</span>
+              <span><span class="dot" style="background:#FFD166"></span>用户</span>
             </div>
           </div>
-        </div>
-      </div>
-    </template>
+          <div v-else class="chart-empty">暂无数据</div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card>
+          <template #header><span>商品分类分布</span></template>
+          <div class="category-chart" v-if="categoryDistribution.length">
+            <div class="cat-bar-wrap" v-for="c in categoryDistribution" :key="c.category">
+              <span class="cat-label">{{ c.category }}</span>
+              <div class="cat-bar-track">
+                <div class="cat-bar-fill" :style="{ width: barPercent(c.count, maxCat) + '%' }"></div>
+              </div>
+              <span class="cat-count">{{ c.count }}</span>
+            </div>
+          </div>
+          <div v-else class="chart-empty">暂无数据</div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getAdminDashboard } from '../../api/admin'
+import { ref, computed, onMounted } from 'vue'
+import { getDashboard } from '../../api/admin'
 
-const loading = ref(true)
-const stats = ref({})
+const overview = ref({})
+const trend = ref([])
+const categoryDistribution = ref([])
 
-async function fetchDashboard() {
-  loading.value = true
+const maxTrend = computed(() => {
+  let max = 1
+  for (const d of trend.value) {
+    max = Math.max(max, d.products, d.orders, d.users)
+  }
+  return max
+})
+
+const maxCat = computed(() => {
+  let max = 1
+  for (const c of categoryDistribution.value) {
+    max = Math.max(max, c.count)
+  }
+  return max
+})
+
+function barHeight(val, max) {
+  return Math.max(2, (val / max) * 200)
+}
+
+function barPercent(val, max) {
+  return Math.round((val / max) * 100)
+}
+
+async function loadDashboard() {
   try {
-    const res = await getAdminDashboard()
-    stats.value = res.data
-  } catch (error) {
-    console.error('Failed to fetch dashboard:', error)
-  } finally {
-    loading.value = false
+    const res = await getDashboard()
+    overview.value = res.data.overview
+    trend.value = res.data.trend
+    categoryDistribution.value = res.data.category_distribution
+  } catch (e) {
+    console.error(e)
   }
 }
 
 onMounted(() => {
-  fetchDashboard()
+  const token = localStorage.getItem('admin_token')
+  if (!token) {
+    window.location.href = '/admin/login'
+    return
+  }
+  loadDashboard()
 })
 </script>
 
 <style scoped>
-.dashboard-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
+.admin-dashboard { padding: 20px; }
 
-.page-title {
+.overview-card { text-align: center; }
+
+.stat-value {
   font-size: 28px;
-  font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 32px;
+  font-weight: bold;
+  color: #409eff;
 }
 
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  color: var(--c-text-muted);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--c-border);
-  border-top-color: var(--c-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: var(--c-surface);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--c-shadow-md);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  transition: transform 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.stat-value.total {
+  color: #333;
+  font-size: 24px;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: var(--c-text-muted);
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: #999;
+  margin-top: 6px;
 }
 
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--c-text);
+/* Trend chart */
+.trend-chart { padding: 8px 0; }
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 220px;
+  padding-bottom: 4px;
+  overflow-x: auto;
 }
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.chart-card {
-  background: var(--c-surface);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--c-shadow-md);
-}
-
-.chart-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--c-text);
-  margin-bottom: 20px;
-}
-
-.chart-placeholder {
-  height: 200px;
+.bar-group {
+  flex: 1;
+  min-width: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.bars-row {
+  display: flex;
+  gap: 1px;
+  align-items: flex-end;
+  height: 200px;
+  width: 100%;
   justify-content: center;
-  background: var(--c-surface-alt);
-  border-radius: 12px;
 }
 
-.recent-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+.bar {
+  width: 3px;
+  border-radius: 1px;
+  min-height: 1px;
+  transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.7; }
+
+.products-bar { background: #5B8DEF; }
+.orders-bar { background: #06D6A0; }
+.users-bar { background: #FFD166; }
+
+.bar-date {
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  width: 0;
 }
 
-.recent-card {
-  background: var(--c-surface);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--c-shadow-md);
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #666;
 }
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--c-text);
-  margin-bottom: 16px;
-}
-
-.empty-text {
-  font-size: 14px;
-  color: var(--c-text-muted);
-  margin-bottom: 16px;
-}
-
-.alert-badge {
+.chart-legend .dot {
   display: inline-block;
-  padding: 8px 16px;
-  background: rgba(255,107,107,0.15);
-  color: #FF6B6B;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Category chart */
+.category-chart { padding: 10px 0; }
+
+.cat-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
-.view-link {
-  color: var(--c-primary);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s;
+.cat-label {
+  width: 44px;
+  font-size: 13px;
+  color: #333;
+  text-align: right;
 }
 
-.view-link:hover {
-  color: var(--c-primary-dark);
+.cat-bar-track {
+  flex: 1;
+  height: 22px;
+  background: #f0f4f8;
+  border-radius: 11px;
+  overflow: hidden;
 }
 
-.funnel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.cat-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #5B8DEF, #4CC9F0);
+  border-radius: 11px;
+  transition: width 0.5s ease;
+  min-width: 4px;
 }
 
-.funnel-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--c-surface-alt);
-  border-radius: 10px;
-}
-
-.funnel-label {
-  font-size: 14px;
-  color: var(--c-text-secondary);
-}
-
-.funnel-value {
-  font-size: 16px;
+.cat-count {
+  width: 36px;
+  font-size: 13px;
+  color: #666;
   font-weight: 600;
-  color: var(--c-text);
+}
+
+.chart-empty {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.total-card .stat-label {
+  font-size: 12px;
 }
 </style>

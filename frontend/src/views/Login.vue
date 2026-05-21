@@ -2,6 +2,11 @@
   <div class="auth-page">
     <div class="auth-bg-decor"></div>
     <div class="auth-card">
+      <button class="auth-back-btn" @click="$router.back()" title="返回">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <div class="auth-brand">
         <div class="brand-icon">
           <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
@@ -30,6 +35,16 @@
         </el-form-item>
       </el-form>
       <p class="auth-link">还没有账号？<router-link to="/register">立即注册</router-link></p>
+      <div class="auth-divider">
+        <span>或</span>
+      </div>
+      <router-link to="/admin/login" class="admin-entry-link">
+        <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+        </svg>
+        管理员登录
+      </router-link>
     </div>
   </div>
 </template>
@@ -90,6 +105,7 @@ async function handleLogin() {
 }
 
 .auth-card {
+  position: relative;
   background: rgba(255,255,255,0.9);
   backdrop-filter: blur(20px);
   padding: 44px 40px;
@@ -161,4 +177,47 @@ async function handleLogin() {
 }
 
 .auth-link a:hover { text-decoration: underline; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--c-border);
+}
+
+.auth-divider span {
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.admin-entry-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 0;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--c-border);
+  background: transparent;
+  color: var(--c-text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+
+.admin-entry-link:hover {
+  background: rgba(30,41,59,0.04);
+  color: var(--c-text-secondary);
+  border-color: var(--c-text-muted);
+}
 </style>

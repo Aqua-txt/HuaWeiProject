@@ -57,6 +57,12 @@
       </div>
     </aside>
     <main class="admin-main">
+      <button class="admin-back-btn" @click="$router.push('/home')" title="返回用户端">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        返回用户端
+      </button>
       <router-view />
     </main>
   </div>
@@ -174,5 +180,26 @@ function logout() {
   margin-left: 240px;
   padding: 32px;
   min-height: 100vh;
+}
+
+.admin-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-surface);
+  color: var(--c-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.admin-back-btn:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+  background: var(--c-primary-light);
 }
 </style>

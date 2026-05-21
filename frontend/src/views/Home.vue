@@ -42,7 +42,7 @@
     <div v-if="products.length > 0" class="product-grid">
       <article v-for="(p, i) in products" :key="p.id" class="product-card"
         :style="{ animationDelay: `${i * 0.04}s` }"
-        @click="$router.push(`/product/${p.id}`)">
+        @click="openProductDetail(p.id)">
         <div class="card-img">
           <el-image :src="getImageUrl(p.images[0])" fit="cover" class="card-image">
             <template #error>
@@ -65,7 +65,7 @@
           </div>
           <div class="card-footer">
             <span class="card-seller">
-              <el-avatar :size="22" :src="getAvatarUrl(p.seller_avatar)" />
+              <el-avatar :size="22" :src="p.seller_avatar ? getAvatarUrl(p.seller_avatar) : undefined">{{ p.seller_nickname?.[0] }}</el-avatar>
               {{ p.seller_nickname }}
             </span>
             <span class="card-time">{{ formatTime(p.created_at) }}</span>
@@ -95,23 +95,36 @@
       <el-pagination background layout="prev, pager, next" :total="total"
         :page-size="perPage" :current-page="page" @current-change="onPageChange" />
     </div>
+
+    <transition name="detail-overlay">
+      <div v-if="selectedProductId" class="detail-overlay" @click="closeProductDetail">
+        <div class="detail-card" @click.stop>
+          <ProductDetailPanel :product-id="selectedProductId" modal @close="closeProductDetail" />
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import { getProducts } from '../api/products'
+import { getUploadUrl } from '../utils/url'
+import ProductDetailPanel from '../components/ProductDetailPanel.vue'
 
-const baseUrl = 'http://127.0.0.1:5000'
+const route = useRoute()
+const router = useRouter()
 
 const products = ref([])
 const keyword = ref('')
 const category = ref('')
 const sort = ref('latest')
 const page = ref(1)
-const perPage = ref(12)
+const perPage = ref(24)
 const total = ref(0)
+const selectedProductId = ref(null)
 
 const categories = [
   { value: '', label: '全部', emoji: '🏠' },
@@ -122,11 +135,11 @@ const categories = [
 ]
 
 function getImageUrl(img) {
-  return img ? `${baseUrl}/api/uploads/${img}` : ''
+  return img ? getUploadUrl(img) : ''
 }
 
 function getAvatarUrl(avatar) {
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 }
 
 function formatTime(t) {
@@ -164,6 +177,43 @@ function onPageChange(p) {
   fetchProducts()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+function openProductDetail(productId) {
+  selectedProductId.value = productId
+  router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      product: String(productId),
+    },
+  })
+}
+
+function closeProductDetail() {
+  selectedProductId.value = null
+  const nextQuery = { ...route.query }
+  delete nextQuery.product
+  router.replace({
+    path: route.path,
+    query: nextQuery,
+  })
+}
+
+watch(selectedProductId, (id) => {
+  document.body.style.overflow = id ? 'hidden' : ''
+})
+
+watch(
+  () => route.query.product,
+  (productId) => {
+    selectedProductId.value = productId ? String(productId) : null
+  },
+  { immediate: true }
+)
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+})
 
 onMounted(() => { fetchProducts() })
 </script>
@@ -312,15 +362,19 @@ onMounted(() => { fetchProducts() })
 
 /* Product Grid */
 .product-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  column-count: 6;
+  column-gap: 18px;
 }
 
-@media (max-width: 1000px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 700px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1600px) { .product-grid { column-count: 5; } }
+@media (max-width: 1280px) { .product-grid { column-count: 4; } }
+@media (max-width: 980px) { .product-grid { column-count: 3; } }
+@media (max-width: 700px) { .product-grid { column-count: 2; } }
 
 .product-card {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 18px;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -329,6 +383,7 @@ onMounted(() => { fetchProducts() })
   box-shadow: 0 1px 4px rgba(26,35,50,0.04);
   border: 1px solid rgba(0,0,0,0.04);
   animation: fadeInUp 0.5s ease both;
+  break-inside: avoid;
 }
 
 .product-card:hover {
@@ -340,13 +395,22 @@ onMounted(() => { fetchProducts() })
 .card-img {
   position: relative;
   width: 100%;
-  height: 200px;
   background: #f0f4f8;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
 }
 
 .card-image {
   width: 100%;
   height: 100%;
+  display: block;
+}
+
+.card-image :deep(.el-image__inner) {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .img-placeholder {
@@ -386,16 +450,18 @@ onMounted(() => { fetchProducts() })
 }
 
 .card-body {
-  padding: 14px;
+  padding: 12px 14px 14px;
 }
 
 .card-title {
   font-size: 15px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--c-text);
 }
 
@@ -417,6 +483,7 @@ onMounted(() => { fetchProducts() })
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .card-seller {
@@ -425,11 +492,40 @@ onMounted(() => { fetchProducts() })
   display: flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-time {
   font-size: 11px;
   color: var(--c-text-muted);
+  flex-shrink: 0;
+}
+
+.product-card:nth-child(6n + 1) .card-img {
+  aspect-ratio: 4 / 5.6;
+}
+
+.product-card:nth-child(6n + 2) .card-img {
+  aspect-ratio: 4 / 4.2;
+}
+
+.product-card:nth-child(6n + 3) .card-img {
+  aspect-ratio: 4 / 6;
+}
+
+.product-card:nth-child(6n + 4) .card-img {
+  aspect-ratio: 4 / 4.8;
+}
+
+.product-card:nth-child(6n + 5) .card-img {
+  aspect-ratio: 4 / 5.2;
+}
+
+.product-card:nth-child(6n) .card-img {
+  aspect-ratio: 4 / 6.4;
 }
 
 /* Empty */
@@ -451,5 +547,60 @@ onMounted(() => { fetchProducts() })
   justify-content: center;
   margin-top: 32px;
   padding-bottom: 20px;
+}
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 88px 24px 24px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.detail-card {
+  width: min(50vw, 960px);
+  height: min(90vh, calc(100vh - 112px));
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  position: relative;
+}
+
+.detail-overlay-enter-active,
+.detail-overlay-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.detail-overlay-enter-from,
+.detail-overlay-leave-to {
+  opacity: 0;
+}
+
+.detail-overlay-enter-from .detail-card,
+.detail-overlay-leave-to .detail-card {
+  transform: translateY(16px) scale(0.98);
+}
+
+@media (max-width: 1200px) {
+  .detail-card {
+    width: min(70vw, 900px);
+  }
+}
+
+@media (max-width: 900px) {
+  .detail-overlay {
+    padding: 80px 16px 16px;
+  }
+
+  .detail-card {
+    width: 100%;
+    height: min(92vh, calc(100vh - 96px));
+    border-radius: 20px;
+  }
 }
 </style>

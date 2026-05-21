@@ -18,11 +18,21 @@ def create_app():
     from routes.products import products_bp
     from routes.chat import chat_bp
     from routes.user import user_bp
+    from routes.orders import orders_bp
+    from routes.review import review_bp
+    from routes.report import report_bp
+    from routes.wanted import wanted_bp
+    from routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(orders_bp)
+    app.register_blueprint(review_bp)
+    app.register_blueprint(report_bp)
+    app.register_blueprint(wanted_bp)
+    app.register_blueprint(admin_bp)
 
     with app.app_context():
         db.create_all()

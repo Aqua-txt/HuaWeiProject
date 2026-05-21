@@ -1,211 +1,142 @@
 <template>
-  <div class="admin-products-page">
-    <h1 class="page-title">商品管理</h1>
+  <div class="admin-products">
+    <el-card>
+      <template #header>
+        <div class="header">
+          <span>商品管理</span>
+          <div>
+            <el-input v-model="keyword" placeholder="搜索商品" style="width: 200px; margin-right: 10px" @keyup.enter="loadProducts" />
+            <el-select v-model="statusFilter" placeholder="状态" clearable @change="loadProducts" style="width: 120px">
+              <el-option label="上架" value="上架" />
+              <el-option label="已下架" value="已下架" />
+            </el-select>
+          </div>
+        </div>
+      </template>
 
-    <div class="filters">
-      <el-input 
-        v-model="search" 
-        placeholder="搜索商品标题" 
-        clearable 
-        @input="fetchProducts"
-        style="width: 300px;"
-      >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-    </div>
-
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>加载中...</p>
-    </div>
-
-    <div v-else-if="products.length === 0" class="empty-state">
-      <p>暂无商品</p>
-    </div>
-
-    <div v-else class="products-table">
-      <el-table :data="products" style="width: 100%">
+      <el-table :data="products" v-loading="loading" stripe>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="商品" min-width="250">
+        <el-table-column prop="title" label="标题" />
+        <el-table-column prop="seller_nickname" label="卖家" width="120" />
+        <el-table-column prop="category" label="分类" width="100" />
+        <el-table-column prop="price" label="价格" width="100">
           <template #default="{ row }">
-            <div class="product-cell">
-              <img :src="productImage(row)" class="product-thumb" />
-              <div class="product-info">
-                <span class="product-title">{{ row.title }}</span>
-                <span class="product-price">¥{{ row.price }}</span>
-              </div>
-            </div>
+            ¥{{ row.price }}
           </template>
         </el-table-column>
-        <el-table-column label="卖家" width="120">
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            {{ row.seller?.nickname || '未知' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="category" label="分类" width="120" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-              {{ row.status === 'active' ? '在售' : '已下架' }}
+            <el-tag :type="row.status === '上架' ? 'success' : 'info'" size="small">
+              {{ row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" width="180">
+        <el-table-column prop="created_at" label="时间" width="180">
           <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
+            {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="150">
           <template #default="{ row }">
-            <el-button size="small" @click="viewProduct(row)">查看</el-button>
-            <el-button 
-              size="small" 
-              :type="row.status === 'active' ? 'warning' : 'success'"
-              @click="toggleProduct(row)"
+            <el-button
+              v-if="row.status === '上架'"
+              type="warning"
+              size="small"
+              @click="toggleStatus(row, '已下架')"
             >
-              {{ row.status === 'active' ? '下架' : '恢复' }}
+              下架
+            </el-button>
+            <el-button
+              v-if="row.status === '已下架'"
+              type="success"
+              size="small"
+              @click="toggleStatus(row, '上架')"
+            >
+              上架
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </div>
+
+      <el-pagination
+        v-if="total > 0"
+        v-model:current-page="page"
+        :page-size="perPage"
+        :total="total"
+        layout="prev, pager, next"
+        @current-change="loadProducts"
+        class="pagination"
+      />
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getAdminProducts, adminToggleProduct } from '../../api/admin'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getAdminProducts, updateAdminProductStatus } from '../../api/admin'
 
 const products = ref([])
-const loading = ref(true)
-const search = ref('')
+const loading = ref(false)
+const page = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const keyword = ref('')
+const statusFilter = ref('')
 
-const baseUrl = 'http://127.0.0.1:5000'
-
-const productImage = (product) => {
-  return product.images?.length > 0 
-    ? `${baseUrl}/api/uploads/${product.images[0]}`
-    : 'https://via.placeholder.com/60x60?text=No'
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString('zh-CN')
 }
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleString('zh-CN')
-}
-
-async function fetchProducts() {
+const loadProducts = async () => {
   loading.value = true
   try {
-    const res = await getAdminProducts({ search: search.value })
-    products.value = res.data.products || []
-  } catch (error) {
-    console.error('Failed to fetch products:', error)
+    const res = await getAdminProducts({
+      page: page.value,
+      per_page: perPage.value,
+      keyword: keyword.value,
+      status: statusFilter.value,
+    })
+    products.value = res.data.products
+    total.value = res.data.total
+  } catch (e) {
+    console.error(e)
   } finally {
     loading.value = false
   }
 }
 
-function viewProduct(product) {
-  window.open(`/product/${product.id}`, '_blank')
-}
-
-async function toggleProduct(product) {
+const toggleStatus = async (product, newStatus) => {
   try {
-    await adminToggleProduct(product.id)
-    ElMessage.success(product.status === 'active' ? '已下架' : '已恢复')
-    fetchProducts()
-  } catch (error) {
-    console.error('Failed to toggle product:', error)
+    await ElMessageBox.confirm(`确认${newStatus === '已下架' ? '下架' : '上架'}该商品？`, '提示', { type: 'warning' })
+    await updateAdminProductStatus(product.id, { status: newStatus })
+    ElMessage.success('操作成功')
+    loadProducts()
+  } catch (e) {
+    if (e !== 'cancel') console.error(e)
   }
 }
 
 onMounted(() => {
-  fetchProducts()
+  loadProducts()
 })
 </script>
 
 <style scoped>
-.admin-products-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 24px;
-}
-
-.filters {
-  margin-bottom: 24px;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: var(--c-text-muted);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--c-border);
-  border-top-color: var(--c-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--c-text-muted);
-}
-
-.products-table {
-  background: var(--c-surface);
-  border-radius: 16px;
+.admin-products {
   padding: 20px;
-  box-shadow: var(--c-shadow-md);
 }
 
-.product-cell {
+.header {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
   align-items: center;
 }
 
-.product-thumb {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.product-info {
+.pagination {
+  margin-top: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.product-title {
-  font-weight: 600;
-  color: var(--c-text);
-}
-
-.product-price {
-  font-size: 14px;
-  color: var(--c-accent);
-  font-weight: 600;
+  justify-content: center;
 }
 </style>

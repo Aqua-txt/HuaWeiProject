@@ -1,29 +1,29 @@
 import api from './index'
 
-export function getWanteds(params) {
-  return api.get('/api/wanteds', { params })
-}
-
-export function getWantedById(id) {
-  return api.get(`/api/wanteds/${id}`)
-}
-
 export function createWanted(data) {
   return api.post('/api/wanteds', data)
 }
 
-export function updateWanted(id, data) {
-  return api.put(`/api/wanteds/${id}`, data)
+export function getWanteds(params) {
+  return api.get('/api/wanteds', { params })
 }
 
-export function deleteWanted(id) {
-  return api.delete(`/api/wanteds/${id}`)
+export function getWanted(wantedId) {
+  return api.get(`/api/wanteds/${wantedId}`)
 }
 
-export function respondToWanted(id, data) {
-  return api.post(`/api/wanteds/${id}/respond`, data)
+export function updateWanted(wantedId, data) {
+  return api.put(`/api/wanteds/${wantedId}`, data)
 }
 
-export function getMyWanteds(params) {
-  return api.get('/api/wanteds/my', { params })
+export function deleteWanted(wantedId) {
+  return api.delete(`/api/wanteds/${wantedId}`)
+}
+
+export function createWantedResponse(wantedId, data) {
+  return api.post(`/api/wanteds/${wantedId}/responses`, data)
+}
+
+export function getWantedResponses(wantedId) {
+  return api.get(`/api/wanteds/${wantedId}/responses`)
 }

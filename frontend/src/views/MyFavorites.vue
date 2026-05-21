@@ -1,11 +1,16 @@
 <template>
   <div class="favorites-page">
     <div class="section-card">
-      <h2>我的收藏</h2>
+      <div class="section-header">
+        <router-link to="/home" class="home-link">
+          <el-button type="primary" round size="small">回到主页</el-button>
+        </router-link>
+        <h2>我的收藏</h2>
+      </div>
       <div v-if="products.length > 0" class="product-grid">
         <article v-for="(p, i) in products" :key="p.id" class="product-card"
           :style="{ animationDelay: `${i * 0.05}s` }"
-          @click="$router.push(`/product/${p.id}`)">
+          @click="openFavoriteProduct(p.id)">
           <div class="card-img">
             <el-image :src="getImageUrl(p.images[0])" fit="cover" class="card-image">
               <template #error>
@@ -48,13 +53,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getFavorites } from '../api/products'
+import { getUploadUrl } from '../utils/url'
 
-const baseUrl = 'http://127.0.0.1:5000'
+const router = useRouter()
 const products = ref([])
 
 function getImageUrl(img) {
-  return img ? `${baseUrl}/api/uploads/${img}` : ''
+  return img ? getUploadUrl(img) : ''
 }
 
 async function fetchFavorites() {
@@ -64,6 +71,13 @@ async function fetchFavorites() {
   } catch {}
 }
 
+function openFavoriteProduct(productId) {
+  router.push({
+    path: '/home',
+    query: { product: String(productId) },
+  })
+}
+
 onMounted(() => { fetchFavorites() })
 </script>
 
@@ -71,6 +85,7 @@ onMounted(() => { fetchFavorites() })
 .favorites-page {
   max-width: 920px;
   margin: 0 auto;
+  padding-top: 24px;
   animation: fadeInUp 0.4s ease;
 }
 
@@ -78,15 +93,28 @@ onMounted(() => { fetchFavorites() })
   background: white;
   border-radius: 20px;
   padding: 24px;
+  margin-top: 12px;
   box-shadow: 0 2px 20px rgba(26,35,50,0.04);
   border: 1px solid rgba(0,0,0,0.03);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.home-link {
+  flex-shrink: 0;
+  text-decoration: none;
 }
 
 .section-card h2 {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin: 0;
 }
 
 .product-grid {
@@ -192,5 +220,21 @@ onMounted(() => { fetchFavorites() })
   padding: 40px 20px;
   color: var(--c-text-muted);
   font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .favorites-page {
+    padding-top: 16px;
+  }
+
+  .section-card {
+    margin-top: 8px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
 </style>

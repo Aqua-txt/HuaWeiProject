@@ -7,7 +7,7 @@
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
       </button>
-      <el-avatar :size="38" :src="getAvatarUrl(partnerAvatar)" class="partner-avatar">
+      <el-avatar :size="38" :src="partnerAvatar ? getAvatarUrl(partnerAvatar) : undefined" class="partner-avatar">
         <span class="avatar-fb">{{ partnerName?.[0] }}</span>
       </el-avatar>
       <div class="partner-info">
@@ -59,10 +59,10 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { getMessages, sendMessage } from '../api/chat'
 import { useUserStore } from '../store'
+import { getUploadUrl } from '../utils/url'
 
 const route = useRoute()
 const userStore = useUserStore()
-const baseUrl = 'http://127.0.0.1:5000'
 
 const conv = ref(null)
 const messages = ref([])
@@ -90,7 +90,7 @@ const partnerAvatar = computed(() => {
 })
 
 function getAvatarUrl(avatar) {
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 }
 
 function formatTime(t) {
@@ -178,15 +178,12 @@ onUnmounted(() => {
 
 <style scoped>
 .chat-page {
-  max-width: 700px;
-  margin: 0 auto;
+  width: 100%;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 2px 20px rgba(26,35,50,0.04);
-  border: 1px solid rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 112px);
+  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
   animation: fadeInUp 0.4s ease;
 }

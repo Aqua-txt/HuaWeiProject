@@ -2,6 +2,9 @@
   <div class="publish-page">
     <div class="publish-card">
       <div class="publish-header">
+        <router-link to="/home" class="home-link">
+          <el-button type="primary" round size="small">返回主页</el-button>
+        </router-link>
         <h2>{{ isEdit ? '编辑商品' : '发布商品' }}</h2>
         <p class="publish-sub">{{ isEdit ? '修改商品信息' : '填写信息，让更多人看到你的闲置' }}</p>
       </div>
@@ -78,6 +81,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { createProduct, updateProduct, getProduct } from '../api/products'
 import { useUserStore } from '../store'
+import { getUploadUrl } from '../utils/url'
 
 const route = useRoute()
 const router = useRouter()
@@ -170,7 +174,7 @@ async function loadProduct() {
     if (p.images) {
       fileList.value = p.images.map((img, i) => ({
         name: `image_${i}`,
-        url: `http://127.0.0.1:5000/api/uploads/${img}`,
+        url: getUploadUrl(img),
         raw: null,
       }))
     }
@@ -182,13 +186,18 @@ onMounted(() => { loadProduct() })
 
 <style scoped>
 .publish-page {
-  max-width: 680px;
-  margin: 0 auto;
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
   animation: fadeInUp 0.4s ease;
 }
 
 .publish-card {
   background: white;
+  width: min(100%, 680px);
   padding: 36px;
   border-radius: 20px;
   box-shadow: 0 2px 20px rgba(26,35,50,0.04);
@@ -196,7 +205,16 @@ onMounted(() => { loadProduct() })
 }
 
 .publish-header {
+  position: relative;
   margin-bottom: 32px;
+  padding-right: 108px;
+}
+
+.home-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  text-decoration: none;
 }
 
 .publish-header h2 {

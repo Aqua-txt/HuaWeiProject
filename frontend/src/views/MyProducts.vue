@@ -2,6 +2,11 @@
   <div class="my-products-page">
     <div class="section-card">
       <div class="section-header">
+        <button class="back-btn" @click="$router.back()" title="返回">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
         <h2>我的发布</h2>
         <el-tabs v-model="activeTab" @tab-change="fetchProducts" class="status-tabs">
           <el-tab-pane name="上架">
@@ -75,13 +80,13 @@ import { ref, onMounted } from 'vue'
 import { getMyProducts } from '../api/user'
 import { updateProductStatus } from '../api/products'
 import { ElMessage } from 'element-plus'
+import { getUploadUrl } from '../utils/url'
 
-const baseUrl = 'http://127.0.0.1:5000'
 const products = ref([])
 const activeTab = ref('上架')
 
 function getImageUrl(img) {
-  return img ? `${baseUrl}/api/uploads/${img}` : ''
+  return img ? getUploadUrl(img) : ''
 }
 
 function formatDate(t) {

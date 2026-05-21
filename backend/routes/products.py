@@ -104,7 +104,7 @@ def create_product():
     except (ValueError, TypeError):
         return jsonify({'code': 400, 'message': '请输入有效价格（0.01-99999.99）'}), 400
 
-    valid_categories = ['教材', '数码', '生活', '其他']
+    valid_categories = ['教材', '数码', '生活', '其他', '数码电子', '图书教材', '生活用品', '服装配饰', '运动户外', '美妆护肤', '食品零食']
     if category not in valid_categories:
         category = '其他'
 
@@ -175,7 +175,7 @@ def update_product(product_id):
 
     category = request.form.get('category')
     if category:
-        if category in ['教材', '数码', '生活', '其他']:
+        if category in ['教材', '数码', '生活', '其他', '数码电子', '图书教材', '生活用品', '服装配饰', '运动户外', '美妆护肤', '食品零食']:
             product.category = category
 
     condition = request.form.get('condition')

@@ -31,34 +31,16 @@ const routes = [
         meta: { title: '我的订单', requiresAuth: true },
       },
       {
-        path: 'orders/:id',
-        name: 'OrderDetail',
-        component: () => import('../views/OrderDetail.vue'),
-        meta: { title: '订单详情', requiresAuth: true },
-      },
-      {
-        path: 'orders/:id/review',
-        name: 'Review',
-        component: () => import('../views/Review.vue'),
-        meta: { title: '评价订单', requiresAuth: true },
-      },
-      {
         path: 'wanteds',
         name: 'Wanteds',
         component: () => import('../views/Wanteds.vue'),
         meta: { title: '求购专区' },
       },
       {
-        path: 'wanted/publish',
-        name: 'PublishWanted',
-        component: () => import('../views/PublishWanted.vue'),
+        path: 'wanted/create',
+        name: 'WantedCreate',
+        component: () => import('../views/Wanteds.vue'),
         meta: { title: '发布求购', requiresAuth: true },
-      },
-      {
-        path: 'wanted/:id',
-        name: 'WantedDetail',
-        component: () => import('../views/WantedDetail.vue'),
-        meta: { title: '求购详情' },
       },
     ],
   },
@@ -117,6 +99,24 @@ const routes = [
     meta: { title: '编辑资料', requiresAuth: true },
   },
   {
+    path: '/order/:id',
+    name: 'OrderDetail',
+    component: () => import('../views/OrderDetail.vue'),
+    meta: { title: '订单详情', requiresAuth: true },
+  },
+  {
+    path: '/pay/:id',
+    name: 'Pay',
+    component: () => import('../views/Pay.vue'),
+    meta: { title: '支付', requiresAuth: true },
+  },
+  {
+    path: '/review/:id',
+    name: 'Review',
+    component: () => import('../views/Review.vue'),
+    meta: { title: '评价', requiresAuth: true },
+  },
+  {
     path: '/admin/login',
     name: 'AdminLogin',
     component: () => import('../views/admin/AdminLogin.vue'),
@@ -126,31 +126,30 @@ const routes = [
     path: '/admin',
     component: () => import('../views/admin/AdminLayout.vue'),
     redirect: '/admin/dashboard',
-    meta: { requiresAdmin: true },
     children: [
       {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: () => import('../views/admin/AdminDashboard.vue'),
-        meta: { title: '数据看板' },
+        meta: { title: '仪表盘', requiresAdmin: true },
       },
       {
         path: 'reports',
         name: 'AdminReports',
         component: () => import('../views/admin/AdminReports.vue'),
-        meta: { title: '举报管理' },
+        meta: { title: '举报管理', requiresAdmin: true },
       },
       {
         path: 'products',
         name: 'AdminProducts',
         component: () => import('../views/admin/AdminProducts.vue'),
-        meta: { title: '商品管理' },
+        meta: { title: '商品管理', requiresAdmin: true },
       },
       {
         path: 'users',
         name: 'AdminUsers',
         component: () => import('../views/admin/AdminUsers.vue'),
-        meta: { title: '用户管理' },
+        meta: { title: '用户管理', requiresAdmin: true },
       },
     ],
   },
@@ -163,15 +162,13 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - 校园二手交易` : '校园二手交易平台'
-  
+
   if (to.meta.requiresAdmin) {
     const adminToken = localStorage.getItem('admin_token')
-    if (!adminToken && to.path !== '/admin/login') {
+    if (!adminToken) {
       return next('/admin/login')
     }
-  }
-  
-  if (to.meta.requiresAuth) {
+  } else if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) {
       return next('/login')

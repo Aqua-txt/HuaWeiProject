@@ -11,7 +11,7 @@
               <path d="M6 12h4M6 16h4M22 8h4M22 13h4M22 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             </svg>
           </div>
-          <span class="logo-text">校园集市</span>
+          <span class="logo-text">拾光集市</span>
         </router-link>
         <div class="header-actions">
           <template v-if="userStore.isLoggedIn">
@@ -67,7 +67,7 @@
         </div>
       </div>
     </header>
-    <main class="layout-main">
+    <main class="layout-main" :class="{ 'layout-main-wide': ['/wanteds', '/wanted/create', '/home'].includes($route.path) }">
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
@@ -83,16 +83,16 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../store'
 import { getUnreadCount } from '../api/chat'
 import { List } from '@element-plus/icons-vue'
+import { getUploadUrl } from '../utils/url'
 
 const router = useRouter()
 const userStore = useUserStore()
 const unreadCount = ref(0)
 
-const baseUrl = 'http://127.0.0.1:5000'
 
 const avatarUrl = computed(() => {
   const avatar = userStore.user?.avatar
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 })
 
 let pollTimer = null
@@ -149,14 +149,16 @@ onUnmounted(() => {
 }
 
 .header-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   padding: 0 24px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: relative;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -275,6 +277,13 @@ onUnmounted(() => {
   padding: 28px 24px;
   position: relative;
   z-index: 1;
+  overflow-x: clip;
+}
+
+.layout-main-wide {
+  max-width: min(1680px, calc(100vw - 16px));
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Page transition */

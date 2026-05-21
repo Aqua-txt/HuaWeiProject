@@ -1,227 +1,142 @@
 <template>
-  <div class="admin-users-page">
-    <h1 class="page-title">用户管理</h1>
+  <div class="admin-users">
+    <el-card>
+      <template #header>
+        <div class="header">
+          <span>用户管理</span>
+          <el-input v-model="keyword" placeholder="搜索用户（学号/昵称）" style="width: 200px" @keyup.enter="loadUsers" />
+        </div>
+      </template>
 
-    <div class="filters">
-      <el-input 
-        v-model="search" 
-        placeholder="搜索学号或昵称" 
-        clearable 
-        @input="fetchUsers"
-        style="width: 300px;"
-      >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-    </div>
-
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>加载中...</p>
-    </div>
-
-    <div v-else-if="users.length === 0" class="empty-state">
-      <p>暂无用户</p>
-    </div>
-
-    <div v-else class="users-table">
-      <el-table :data="users" style="width: 100%">
+      <el-table :data="users" v-loading="loading" stripe>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="用户" min-width="200">
+        <el-table-column prop="student_id" label="学号" width="150" />
+        <el-table-column prop="nickname" label="昵称" width="150" />
+        <el-table-column prop="credit_score" label="信用分" width="100">
           <template #default="{ row }">
-            <div class="user-cell">
-              <el-avatar :size="40" :src="userAvatar(row)">
-                {{ row.nickname?.[0] }}
-              </el-avatar>
-              <div class="user-info">
-                <span class="user-name">{{ row.nickname }}</span>
-                <span class="user-id">{{ row.student_id }}</span>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="信用分" width="120">
-          <template #default="{ row }">
-            <div class="credit-score">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="color: #F59E0B;">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              <span>{{ row.credit_score?.toFixed(1) || '0.0' }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="发布数" width="100">
-          <template #default="{ row }">
-            {{ row.product_count || 0 }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'danger'">
-              {{ row.status === 'active' ? '正常' : '封禁' }}
+            <el-tag :type="getCreditType(row.credit_score)" size="small">
+              {{ row.credit_score }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="注册时间" width="180">
+        <el-table-column prop="credit_count" label="评价数" width="100" />
+        <el-table-column prop="is_banned" label="状态" width="100">
           <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
+            <el-tag :type="row.is_banned ? 'danger' : 'success'" size="small">
+              {{ row.is_banned ? '已封禁' : '正常' }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column prop="created_at" label="注册时间" width="180">
           <template #default="{ row }">
-            <el-button size="small" @click="viewUser(row)">查看</el-button>
-            <el-button 
-              size="small" 
-              :type="row.status === 'active' ? 'danger' : 'success'"
-              @click="toggleUser(row)"
+            {{ formatTime(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150">
+          <template #default="{ row }">
+            <el-button
+              v-if="!row.is_banned"
+              type="danger"
+              size="small"
+              @click="toggleBan(row, true)"
             >
-              {{ row.status === 'active' ? '封禁' : '解封' }}
+              封禁
+            </el-button>
+            <el-button
+              v-if="row.is_banned"
+              type="success"
+              size="small"
+              @click="toggleBan(row, false)"
+            >
+              解封
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </div>
+
+      <el-pagination
+        v-if="total > 0"
+        v-model:current-page="page"
+        :page-size="perPage"
+        :total="total"
+        layout="prev, pager, next"
+        @current-change="loadUsers"
+        class="pagination"
+      />
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAdminUsers, adminToggleUser } from '../../api/admin'
+import { getAdminUsers, toggleUserBan } from '../../api/admin'
 
 const users = ref([])
-const loading = ref(true)
-const search = ref('')
+const loading = ref(false)
+const page = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+const keyword = ref('')
 
-const baseUrl = 'http://127.0.0.1:5000'
-
-const userAvatar = (user) => {
-  return user.avatar ? `${baseUrl}/api/uploads/${user.avatar}` : ''
+const getCreditType = (score) => {
+  if (score >= 4.5) return 'success'
+  if (score >= 3) return 'warning'
+  return 'danger'
 }
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleString('zh-CN')
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString('zh-CN')
 }
 
-async function fetchUsers() {
+const loadUsers = async () => {
   loading.value = true
   try {
-    const res = await getAdminUsers({ search: search.value })
-    users.value = res.data.users || []
-  } catch (error) {
-    console.error('Failed to fetch users:', error)
+    const res = await getAdminUsers({
+      page: page.value,
+      per_page: perPage.value,
+      keyword: keyword.value,
+    })
+    users.value = res.data.users
+    total.value = res.data.total
+  } catch (e) {
+    console.error(e)
   } finally {
     loading.value = false
   }
 }
 
-function viewUser(user) {
-  window.open(`/profile/${user.id}`, '_blank')
-}
-
-async function toggleUser(user) {
-  const action = user.status === 'active' ? '封禁' : '解封'
+const toggleBan = async (user, isBanned) => {
   try {
-    await ElMessageBox.confirm(
-      `确定要${action}用户 "${user.nickname}" 吗?`,
-      '确认操作',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    )
-    await adminToggleUser(user.id)
-    ElMessage.success(`已${action}`)
-    fetchUsers()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('Failed to toggle user:', error)
-    }
+    await ElMessageBox.confirm(`确认${isBanned ? '封禁' : '解封'}该用户？`, '提示', { type: 'warning' })
+    await toggleUserBan(user.id, { is_banned: isBanned })
+    ElMessage.success('操作成功')
+    loadUsers()
+  } catch (e) {
+    if (e !== 'cancel') console.error(e)
   }
 }
 
 onMounted(() => {
-  fetchUsers()
+  loadUsers()
 })
 </script>
 
 <style scoped>
-.admin-users-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 24px;
-}
-
-.filters {
-  margin-bottom: 24px;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: var(--c-text-muted);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--c-border);
-  border-top-color: var(--c-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--c-text-muted);
-}
-
-.users-table {
-  background: var(--c-surface);
-  border-radius: 16px;
+.admin-users {
   padding: 20px;
-  box-shadow: var(--c-shadow-md);
 }
 
-.user-cell {
+.header {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
   align-items: center;
 }
 
-.user-info {
+.pagination {
+  margin-top: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.user-name {
-  font-weight: 600;
-  color: var(--c-text);
-}
-
-.user-id {
-  font-size: 13px;
-  color: var(--c-text-muted);
-}
-
-.credit-score {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
+  justify-content: center;
 }
 </style>

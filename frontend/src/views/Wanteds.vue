@@ -2,19 +2,20 @@
   <div class="wanteds-page">
     <div class="page-header">
       <h1 class="page-title">求购专区</h1>
-      <button class="btn-publish" @click="$router.push('/wanted/publish')">
-        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        发布求购
-      </button>
-    </div>
-
-    <div class="filters">
-      <el-select v-model="category" placeholder="全部分类" clearable @change="fetchWanteds">
-        <el-option label="全部分类" value="" />
-        <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
-      </el-select>
+      <div class="header-actions">
+        <button class="btn-back-home" @click="$router.push('/home')">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          返回主页
+        </button>
+        <button class="btn-publish" @click="openPublishModal">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          发布求购
+        </button>
+      </div>
     </div>
 
     <div v-if="loading" class="loading-state">
@@ -29,97 +30,88 @@
       </svg>
       <h3>暂无求购信息</h3>
       <p>发布您的求购,让有货的同学找到你</p>
-      <button class="btn-primary" @click="$router.push('/wanted/publish')">发布求购</button>
+      <button class="btn-primary" @click="openPublishModal">发布求购</button>
     </div>
 
-    <div v-else class="wanteds-grid">
-      <div v-for="wanted in wanteds" :key="wanted.id" class="wanted-card" @click="goToDetail(wanted.id)">
-        <div class="wanted-header">
-          <el-avatar :size="36" :src="userAvatar(wanted.user)">{{ wanted.user?.nickname?.[0] }}</el-avatar>
-          <div class="user-info">
-            <span class="user-name">{{ wanted.user?.nickname }}</span>
-            <span class="post-time">{{ formatDate(wanted.created_at) }}</span>
-          </div>
-          <el-tag v-if="wanted.status === 'closed'" size="small" type="info">已关闭</el-tag>
+    <div v-else class="wanteds-cloud-board">
+      <div
+        v-for="(wanted, index) in wanteds"
+        :key="wanted.id"
+        class="cloud-wanted-item"
+        :class="[
+          `cloud-size-${(index % 5) + 1}`,
+          `cloud-tone-${(index % 6) + 1}`,
+          `cloud-rotate-${(index % 4) + 1}`,
+        ]"
+      >
+        <button
+          v-if="isOwnWanted(wanted)"
+          class="cloud-delete-btn"
+          type="button"
+          title="删除求购"
+          @click.stop="handleDeleteWanted(wanted)"
+        >
+          删除
+        </button>
+        <div class="cloud-item-main">
+          <h3 class="cloud-item-title">{{ wanted.title }}</h3>
+          <div class="cloud-item-budget">{{ formatBudget(wanted) }}</div>
         </div>
-        <h3 class="wanted-title">{{ wanted.title }}</h3>
-        <p class="wanted-desc">{{ wanted.description }}</p>
-        <div class="wanted-meta">
-          <div class="meta-item">
-            <span class="meta-label">预算</span>
-            <span class="meta-value">¥{{ wanted.budget_min }} - ¥{{ wanted.budget_max }}</span>
-          </div>
-          <div v-if="wanted.category" class="meta-item">
-            <span class="meta-label">分类</span>
-            <span class="meta-value">{{ wanted.category }}</span>
-          </div>
-          <div v-if="wanted.desired_condition" class="meta-item">
-            <span class="meta-label">期望成色</span>
-            <span class="meta-value">{{ wanted.desired_condition }}</span>
-          </div>
+        <div class="cloud-item-tags">
+          <span v-if="wanted.category" class="cloud-tag">{{ wanted.category }}</span>
+          <span v-if="wanted.desired_condition" class="cloud-tag">{{ wanted.desired_condition }}</span>
+          <span class="cloud-tag">{{ wanted.status === '已关闭' ? '已关闭' : '求购中' }}</span>
         </div>
-        <div class="wanted-footer">
-          <span class="response-count">{{ wanted.response_count || 0 }} 人响应</span>
-          <button v-if="wanted.status === 'active'" class="btn-respond" @click.stop="openRespondDialog(wanted)">
-            我有货
-          </button>
+        <p class="cloud-item-desc">{{ trimText(wanted.description, 24) }}</p>
+        <div class="cloud-item-footer">
+          <span class="cloud-user">
+            <el-avatar :size="22" :src="userAvatar(wanted) || undefined">{{ wanted.user_nickname?.[0] }}</el-avatar>
+            {{ wanted.user_nickname || '匿名同学' }}
+          </span>
+          <span class="cloud-time">{{ formatDate(wanted.created_at) }}</span>
         </div>
       </div>
     </div>
 
-    <el-dialog v-model="respondDialogVisible" title="响应求购" width="500px">
-      <el-form :model="respondForm" label-width="80px">
-        <el-form-item label="报价">
-          <el-input-number v-model="respondForm.price" :min="0" :precision="2" style="width: 100%;" />
-        </el-form-item>
-        <el-form-item label="留言">
-          <el-input v-model="respondForm.message" type="textarea" :rows="3" placeholder="介绍一下您的东西~" />
-        </el-form-item>
-        <el-form-item label="关联商品">
-          <el-select v-model="respondForm.product_id" placeholder="可选,关联您的在售商品" clearable style="width: 100%;">
-            <el-option v-for="p in myProducts" :key="p.id" :label="p.title" :value="p.id" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="respondDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitRespond">提交响应</el-button>
-      </template>
-    </el-dialog>
   </div>
+
+  <teleport to="body">
+    <div v-if="showPublishModal" class="wanted-modal-overlay" @click="closePublishModal">
+      <div class="wanted-modal-panel" @click.stop>
+        <WantedFormCard @cancel="closePublishModal" @success="handlePublishSuccess" />
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { getWanteds, respondToWanted } from '../api/wanted'
-import { getMyProducts } from '../api/products'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import WantedFormCard from '../components/WantedFormCard.vue'
+import { deleteWanted, getWanteds } from '../api/wanted'
+import { useUserStore } from '../store'
+import { getUploadUrl } from '../utils/url'
 
+const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const wanteds = ref([])
 const loading = ref(true)
-const category = ref('')
-const respondDialogVisible = ref(false)
-const selectedWanted = ref(null)
-const myProducts = ref([])
+const showPublishModal = computed(() => route.path === '/wanted/create')
+const currentUserId = computed(() => userStore.user?.id ?? null)
 
-const respondForm = reactive({
-  price: 0,
-  message: '',
-  product_id: null,
-})
-
-const baseUrl = 'http://127.0.0.1:5000'
-
-const categories = [
-  '数码电子', '图书教材', '生活用品', '服装配饰', 
-  '运动户外', '美妆护肤', '食品零食', '其他'
-]
-
-const userAvatar = (user) => {
-  return user?.avatar ? `${baseUrl}/api/uploads/${user.avatar}` : ''
+const userAvatar = (wanted) => {
+  return wanted?.user_avatar ? getUploadUrl(wanted.user_avatar) : ''
 }
+
+const trimText = (text, max = 10) => {
+  if (!text) return ''
+  return text.length > max ? `${text.slice(0, max)}...` : text
+}
+
+const formatBudget = (wanted) => `¥${wanted.budget_min} - ¥${wanted.budget_max}`
+const isOwnWanted = (wanted) => currentUserId.value && wanted.user_id === currentUserId.value
 
 const formatDate = (date) => {
   const now = new Date()
@@ -135,7 +127,7 @@ const formatDate = (date) => {
 async function fetchWanteds() {
   loading.value = true
   try {
-    const res = await getWanteds({ category: category.value })
+    const res = await getWanteds()
     wanteds.value = res.data.wanteds || []
   } catch (error) {
     console.error('Failed to fetch wanteds:', error)
@@ -144,58 +136,54 @@ async function fetchWanteds() {
   }
 }
 
-async function fetchMyProducts() {
+function openPublishModal() {
+  router.push('/wanted/create')
+}
+
+function closePublishModal() {
+  if (showPublishModal.value) router.replace('/wanteds')
+}
+
+async function handlePublishSuccess() {
+  await fetchWanteds()
+  closePublishModal()
+}
+
+async function handleDeleteWanted(wanted) {
   try {
-    const res = await getMyProducts()
-    myProducts.value = res.data.products || []
+    await ElMessageBox.confirm(`确认删除“${wanted.title}”吗？`, '删除求购', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+    await deleteWanted(wanted.id)
+    wanteds.value = wanteds.value.filter((item) => item.id !== wanted.id)
+    ElMessage.success('删除成功')
   } catch (error) {
-    console.error('Failed to fetch my products:', error)
+    if (error !== 'cancel') console.error('Failed to delete wanted:', error)
   }
 }
 
-function goToDetail(id) {
-  router.push(`/wanted/${id}`)
-}
-
-function openRespondDialog(wanted) {
-  const token = localStorage.getItem('token')
-  if (!token) {
-    ElMessage.warning('请先登录')
-    router.push('/login')
-    return
-  }
-  selectedWanted.value = wanted
-  respondForm.price = wanted.budget_max
-  respondForm.message = ''
-  respondForm.product_id = null
-  respondDialogVisible.value = true
-  fetchMyProducts()
-}
-
-async function submitRespond() {
-  if (!respondForm.message.trim()) {
-    ElMessage.warning('请填写留言')
-    return
-  }
-  try {
-    await respondToWanted(selectedWanted.value.id, respondForm)
-    ElMessage.success('响应已发送')
-    respondDialogVisible.value = false
-    fetchWanteds()
-  } catch (error) {
-    console.error('Failed to respond:', error)
-  }
-}
+watch(showPublishModal, (visible) => {
+  document.body.style.overflow = visible ? 'hidden' : ''
+}, { immediate: true })
 
 onMounted(() => {
   fetchWanteds()
+})
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 </script>
 
 <style scoped>
 .wanteds-page {
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .page-header {
@@ -209,6 +197,34 @@ onMounted(() => {
   font-size: 28px;
   font-weight: 700;
   color: var(--c-text);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 12px;
+  background: white;
+  color: var(--c-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.btn-back-home:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+  background: var(--c-primary-light);
+  transform: translateY(-2px);
 }
 
 .btn-publish {
@@ -230,10 +246,6 @@ onMounted(() => {
 .btn-publish:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(91,141,239,0.4);
-}
-
-.filters {
-  margin-bottom: 24px;
 }
 
 .loading-state {
@@ -302,27 +314,6 @@ onMounted(() => {
   box-shadow: 0 6px 20px rgba(91,141,239,0.4);
 }
 
-.wanteds-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.wanted-card {
-  background: var(--c-surface);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: var(--c-shadow-md);
-  cursor: pointer;
-  transition: all 0.25s;
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.wanted-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--c-shadow-lg);
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -334,103 +325,275 @@ onMounted(() => {
   }
 }
 
-.wanted-header {
+.wanteds-cloud-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-auto-flow: dense;
+  align-items: start;
+  gap: 18px 20px;
+  width: 100%;
+  padding: 34px 32px;
+  min-height: 520px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top, rgba(91, 141, 239, 0.08), transparent 36%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid rgba(137, 149, 169, 0.18);
+  box-shadow: var(--c-shadow-md);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cloud-wanted-item {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 24px rgba(40, 60, 120, 0.08);
+  backdrop-filter: blur(8px);
+  animation: fadeInUp 0.4s ease-out;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--c-text);
-}
-
-.post-time {
+.cloud-delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--c-accent);
   font-size: 12px;
-  color: var(--c-text-muted);
-}
-
-.wanted-title {
-  font-size: 18px;
   font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 12px;
-  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.wanted-desc {
-  font-size: 14px;
+.cloud-delete-btn:hover {
+  background: var(--c-accent);
+  color: white;
+}
+
+.cloud-wanted-item:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(40, 60, 120, 0.12);
+}
+
+.cloud-item-main {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-right: 48px;
+}
+
+.cloud-item-title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--c-text);
+  word-break: break-word;
+}
+
+.cloud-item-budget {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cloud-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cloud-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  font-size: 12px;
+  font-weight: 600;
   color: var(--c-text-secondary);
-  line-height: 1.6;
-  margin-bottom: 16px;
+}
+
+.cloud-item-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--c-text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.wanted-meta {
+.cloud-item-footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: var(--c-surface-alt);
-  border-radius: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.meta-item {
-  flex: 1;
-  min-width: 100px;
+.cloud-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.meta-label {
-  display: block;
+.cloud-time {
+  flex-shrink: 0;
   font-size: 12px;
   color: var(--c-text-muted);
-  margin-bottom: 4px;
 }
 
-.meta-value {
+.cloud-size-1,
+.cloud-size-2 {
+  grid-column: span 2;
+}
+
+.cloud-size-1 .cloud-item-title {
+  font-size: 30px;
+}
+
+.cloud-size-1 .cloud-item-budget {
+  font-size: 18px;
+  color: #2d6cdf;
+}
+
+.cloud-size-2 .cloud-item-title {
+  font-size: 24px;
+}
+
+.cloud-size-2 .cloud-item-budget {
+  font-size: 16px;
+  color: #3aa76d;
+}
+
+.cloud-size-3 .cloud-item-title {
+  font-size: 20px;
+}
+
+.cloud-size-3 .cloud-item-budget {
+  font-size: 15px;
+  color: #cb7d21;
+}
+
+.cloud-size-4 .cloud-item-title {
+  font-size: 17px;
+}
+
+.cloud-size-4 .cloud-item-budget {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--c-text);
+  color: #8b66d9;
 }
 
-.wanted-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 16px;
-  border-top: 1px solid var(--c-border);
+.cloud-size-5 .cloud-item-title {
+  font-size: 15px;
 }
 
-.response-count {
+.cloud-size-5 .cloud-item-budget {
   font-size: 13px;
-  color: var(--c-text-muted);
+  color: #d35f56;
 }
 
-.btn-respond {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: var(--c-secondary);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.cloud-tone-1 {
+  background: linear-gradient(135deg, rgba(237, 246, 255, 0.98), rgba(255, 255, 255, 0.9));
 }
 
-.btn-respond:hover {
-  background: #05B894;
-  transform: translateY(-1px);
+.cloud-tone-2 {
+  background: linear-gradient(135deg, rgba(241, 255, 246, 0.98), rgba(255, 255, 255, 0.9));
 }
+
+.cloud-tone-3 {
+  background: linear-gradient(135deg, rgba(255, 247, 236, 0.98), rgba(255, 255, 255, 0.9));
+}
+
+.cloud-tone-4 {
+  background: linear-gradient(135deg, rgba(248, 242, 255, 0.98), rgba(255, 255, 255, 0.9));
+}
+
+.cloud-tone-5 {
+  background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.9));
+}
+
+.cloud-tone-6 {
+  background: linear-gradient(135deg, rgba(238, 253, 253, 0.98), rgba(255, 255, 255, 0.9));
+}
+
+.cloud-rotate-1 {
+  transform: rotate(-2deg);
+}
+
+.cloud-rotate-2 {
+  transform: rotate(1.5deg);
+}
+
+.cloud-rotate-3 {
+  transform: rotate(-1deg);
+}
+
+.cloud-rotate-4 {
+  transform: rotate(2deg);
+}
+
+.wanted-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 24, 39, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.wanted-modal-panel {
+  width: min(100%, 680px);
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 24px;
+}
+
+@media (max-width: 768px) {
+  .wanteds-page {
+    width: 100%;
+  }
+
+  .wanteds-cloud-board {
+    padding: 18px 14px;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .wanted-modal-overlay {
+    padding: 12px;
+  }
+
+  .cloud-wanted-item,
+  .cloud-size-1,
+  .cloud-size-2,
+  .cloud-size-3,
+  .cloud-size-4,
+  .cloud-size-5 {
+    grid-column: span 1;
+    width: 100%;
+  }
+}
+
 </style>

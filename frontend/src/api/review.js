@@ -4,14 +4,14 @@ export function createReview(data) {
   return api.post('/api/reviews', data)
 }
 
-export function getReviewsByUser(userId, params) {
-  return api.get(`/api/reviews/user/${userId}`, { params })
+export function getReviews(params) {
+  return api.get('/api/reviews', { params })
 }
 
-export function getMyReviews(params) {
-  return api.get('/api/reviews/my', { params })
+export function getReview(reviewId) {
+  return api.get(`/api/reviews/${reviewId}`)
 }
 
-export function checkReviewed(orderId) {
-  return api.get(`/api/reviews/check/${orderId}`)
+export function checkReviewable(orderId) {
+  return api.get(`/api/orders/${orderId}/reviewable`)
 }

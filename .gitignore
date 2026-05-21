@@ -48,11 +48,8 @@ __pycache__/
 coverage/
 .nyc_output/
 
-# Database
-*.db
-
-# Uploads
-backend/uploads/*
+# Database (tracked for seed data)
+# Uploads (tracked for seed data)
 
 # Package files (uncomment if needed)
 # *.zip

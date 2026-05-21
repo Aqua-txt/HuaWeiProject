@@ -2,6 +2,11 @@
   <div class="auth-page">
     <div class="auth-bg-decor"></div>
     <div class="auth-card">
+      <button class="auth-back-btn" @click="$router.back()" title="返回">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <div class="auth-brand">
         <div class="brand-icon">
           <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
@@ -124,6 +129,7 @@ async function handleRegister() {
 }
 
 .auth-card {
+  position: relative;
   background: rgba(255,255,255,0.9);
   backdrop-filter: blur(20px);
   padding: 38px 40px;

@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
-from models import db, Conversation, Message
+from models import db, Conversation, Message, beijing_now
 from utils.auth import login_required
 
 chat_bp = Blueprint('chat', __name__)
@@ -106,6 +106,14 @@ def get_messages(conv_id):
         'code': 200,
         'data': {
             'messages': [m.to_dict() for m in msgs],
+            'buyer_id': conv.buyer_id,
+            'buyer_nickname': conv.buyer.nickname if conv.buyer else '',
+            'buyer_avatar': conv.buyer.avatar if conv.buyer else '',
+            'seller_id': conv.seller_id,
+            'seller_nickname': conv.seller.nickname if conv.seller else '',
+            'seller_avatar': conv.seller.avatar if conv.seller else '',
+            'product_id': conv.product_id,
+            'product_title': conv.product.title if conv.product else '',
         }
     })
 
@@ -132,7 +140,7 @@ def send_message(conv_id):
         msg_type='text',
     )
     db.session.add(msg)
-    conv.updated_at = datetime.utcnow()
+    conv.updated_at = beijing_now()
     db.session.commit()
 
     return jsonify({'code': 200, 'data': msg.to_dict()})

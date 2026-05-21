@@ -1,6 +1,11 @@
 <template>
   <div class="edit-profile-page">
     <div class="edit-card">
+      <button class="back-btn" @click="$router.back()" title="返回">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
       <h2>编辑资料</h2>
       <el-form ref="formRef" :model="form" label-position="top" size="large">
         <el-form-item label="头像">
@@ -49,10 +54,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store'
 import { updateProfile } from '../api/user'
+import { getUploadUrl } from '../utils/url'
 
 const router = useRouter()
 const userStore = useUserStore()
-const baseUrl = 'http://127.0.0.1:5000'
 const saving = ref(false)
 const formRef = ref(null)
 const avatarFile = ref(null)
@@ -60,7 +65,7 @@ const avatarPreview = ref('')
 
 const avatarUrl = computed(() => {
   const avatar = userStore.user?.avatar
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 })
 
 const form = reactive({ nickname: '', phone: '', email: '' })
@@ -104,23 +109,40 @@ onMounted(() => {
 
 <style scoped>
 .edit-profile-page {
-  max-width: 500px;
-  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
   animation: fadeInUp 0.4s ease;
 }
 
 .edit-card {
   background: white;
+  width: min(100%, 500px);
   border-radius: 20px;
   padding: 32px;
   box-shadow: 0 2px 20px rgba(26,35,50,0.04);
   border: 1px solid rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.edit-card :deep(.back-btn) {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  margin-right: 0;
 }
 
 .edit-card h2 {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
+  padding-left: 72px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
   margin-bottom: 28px;
 }
 

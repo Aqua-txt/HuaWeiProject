@@ -117,8 +117,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getWantedById, respondToWanted } from '../api/wanted'
-import { getMyProducts } from '../api/products'
+import { getWanted, createWantedResponse } from '../api/wanted'
+import { getMyProducts } from '../api/user'
+import { getUploadUrl } from '../utils/url'
 
 const route = useRoute()
 const router = useRouter()
@@ -135,19 +136,18 @@ const respondForm = reactive({
   product_id: null,
 })
 
-const baseUrl = 'http://127.0.0.1:5000'
 
 const userAvatar = computed(() => {
-  return wanted.value?.user?.avatar ? `${baseUrl}/api/uploads/${wanted.value.user.avatar}` : ''
+  return wanted.value?.user?.avatar ? getUploadUrl(wanted.value.user.avatar) : ''
 })
 
 const responderAvatar = (response) => {
-  return response.responder?.avatar ? `${baseUrl}/api/uploads/${response.responder.avatar}` : ''
+  return response.responder?.avatar ? getUploadUrl(response.responder.avatar) : ''
 }
 
 const productImage = (product) => {
   return product.images?.length > 0 
-    ? `${baseUrl}/api/uploads/${product.images[0]}`
+    ? getUploadUrl(product.images[0])
     : 'https://via.placeholder.com/120x120?text=No+Image'
 }
 
@@ -163,10 +163,10 @@ const formatDate = (date) => {
 async function fetchWanted() {
   loading.value = true
   try {
-    const res = await getWantedById(route.params.id)
-    wanted.value = res.data.wanted
+    const res = await getWanted(route.params.id)
+    wanted.value = res.data
     responses.value = res.data.responses || []
-    relatedProducts.value = res.data.related_products || []
+    relatedProducts.value = res.data.recommended_products || []
   } catch (error) {
     console.error('Failed to fetch wanted:', error)
   } finally {
@@ -203,7 +203,11 @@ async function submitRespond() {
     return
   }
   try {
-    await respondToWanted(wanted.value.id, respondForm)
+    await createWantedResponse(wanted.value.id, {
+      price_offer: respondForm.price,
+      message: respondForm.message,
+      product_id: respondForm.product_id,
+    })
     ElMessage.success('响应已发送')
     respondDialogVisible.value = false
     fetchWanted()

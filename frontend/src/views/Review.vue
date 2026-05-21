@@ -18,7 +18,7 @@
 
       <div class="review-card">
         <div class="peer-section">
-          <el-avatar :size="64" :src="peerAvatar">{{ peer?.nickname?.[0] }}</el-avatar>
+          <el-avatar :size="64" :src="peerAvatar || undefined">{{ peer?.nickname?.[0] }}</el-avatar>
           <div class="peer-info">
             <h2 class="peer-name">{{ peer?.nickname }}</h2>
             <p class="peer-role">交易伙伴</p>
@@ -26,9 +26,9 @@
         </div>
 
         <div class="product-section">
-          <img :src="productImage" :alt="order.product.title" class="product-image" />
+          <img :src="productImage" :alt="order.product_title" class="product-image" />
           <div class="product-info">
-            <h3 class="product-title">{{ order.product.title }}</h3>
+            <h3 class="product-title">{{ order.product_title }}</h3>
             <p class="product-price">交易金额: ¥{{ order.amount.toFixed(2) }}</p>
           </div>
         </div>
@@ -125,9 +125,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getOrderById } from '../api/order'
+import { getOrder } from '../api/order'
 import { createReview } from '../api/review'
 import { useUserStore } from '../store'
+import { getUploadUrl } from '../utils/url'
 
 const route = useRoute()
 const router = useRouter()
@@ -143,33 +144,43 @@ const ratings = reactive({
   speed: 5,
 })
 
-const baseUrl = 'http://127.0.0.1:5000'
 
 const isBuyer = computed(() => {
   return order.value?.buyer_id === userStore.user?.id
 })
 
 const peer = computed(() => {
-  return isBuyer.value ? order.value?.seller : order.value?.buyer
+  if (!order.value) return null
+  return isBuyer.value
+    ? {
+        id: order.value.seller_id,
+        nickname: order.value.seller_nickname,
+        avatar: order.value.seller_avatar,
+      }
+    : {
+        id: order.value.buyer_id,
+        nickname: order.value.buyer_nickname,
+        avatar: order.value.buyer_avatar,
+      }
 })
 
 const peerAvatar = computed(() => {
   const avatar = peer.value?.avatar
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 })
 
 const productImage = computed(() => {
-  const images = order.value?.product?.images
+  const images = order.value?.product_images
   return images?.length > 0 
-    ? `${baseUrl}/api/uploads/${images[0]}`
+    ? getUploadUrl(images[0])
     : 'https://via.placeholder.com/120x120?text=No+Image'
 })
 
 async function fetchOrder() {
   loading.value = true
   try {
-    const res = await getOrderById(route.params.id)
-    order.value = res.data.order
+    const res = await getOrder(route.params.id)
+    order.value = res.data
   } catch (error) {
     console.error('Failed to fetch order:', error)
   } finally {

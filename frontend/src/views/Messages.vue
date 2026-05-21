@@ -9,7 +9,7 @@
         <div v-for="c in conversations" :key="c.id" class="conv-item"
           @click="$router.push(`/chat/${c.id}`)">
           <div class="conv-avatar-col">
-            <el-avatar :size="50" :src="getAvatarUrl(otherParty(c).avatar)" class="conv-avatar">
+            <el-avatar :size="50" :src="otherParty(c).avatar ? getAvatarUrl(otherParty(c).avatar) : undefined" class="conv-avatar">
               <span class="avatar-text">{{ otherParty(c).nickname?.[0] }}</span>
             </el-avatar>
             <span v-if="c.unread_count > 0" class="unread-dot">{{ c.unread_count > 99 ? '99+' : c.unread_count }}</span>
@@ -26,7 +26,7 @@
             </div>
           </div>
           <div class="conv-thumb" v-if="c.product_images">
-            <el-image :src="`${baseUrl}/api/uploads/${c.product_images}`" fit="cover"
+            <el-image :src="getUploadUrl(c.product_images)" fit="cover"
               class="thumb-pic" />
           </div>
         </div>
@@ -47,9 +47,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '../store'
 import { getConversations } from '../api/chat'
+import { getUploadUrl } from '../utils/url'
 
 const userStore = useUserStore()
-const baseUrl = 'http://127.0.0.1:5000'
 const conversations = ref([])
 
 let pollTimer = null
@@ -62,7 +62,7 @@ function otherParty(c) {
 }
 
 function getAvatarUrl(avatar) {
-  return avatar ? `${baseUrl}/api/uploads/${avatar}` : ''
+  return avatar ? getUploadUrl(avatar) : ''
 }
 
 function formatTime(t) {
