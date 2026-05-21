@@ -115,7 +115,7 @@ onMounted(() => { fetchProducts() })
 <style scoped>
 .my-products-page {
   max-width: 760px;
-  margin: 0 auto;
+  margin: 24px auto 0;
   animation: fadeInUp 0.4s ease;
 }
 
