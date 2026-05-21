@@ -23,7 +23,7 @@
             <span class="user-name">{{ wanted.user?.nickname }}</span>
             <span class="post-time">{{ formatDate(wanted.created_at) }}</span>
           </div>
-          <el-tag v-if="wanted.status === 'closed'" type="info">已关闭</el-tag>
+          <el-tag v-if="wanted.status !== '求购中'" type="info">已关闭</el-tag>
         </div>
 
         <h2 class="wanted-title">{{ wanted.title }}</h2>
@@ -38,14 +38,10 @@
             <span class="meta-label">分类</span>
             <span class="meta-value">{{ wanted.category }}</span>
           </div>
-          <div v-if="wanted.desired_condition" class="meta-item">
-            <span class="meta-label">期望成色</span>
-            <span class="meta-value">{{ wanted.desired_condition }}</span>
-          </div>
         </div>
 
         <div class="action-section">
-          <button v-if="wanted.status === 'active'" class="btn-primary" @click="openRespondDialog">
+          <button v-if="wanted.status === '求购中'" class="btn-primary" @click="openRespondDialog">
             我有货,响应求购
           </button>
         </div>
@@ -61,7 +57,7 @@
               <span class="response-time">{{ formatDate(response.created_at) }}</span>
             </div>
             <div class="response-content">
-              <div class="response-price">报价: ¥{{ response.price_offer }}</div>
+              <div class="response-price">商品价格: ¥{{ response.product_price }}</div>
               <p class="response-message">{{ response.message }}</p>
               <div v-if="response.product" class="response-product">
                 <span>关联商品: </span>

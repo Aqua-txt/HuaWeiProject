@@ -36,6 +36,15 @@
         </el-form-item>
       </el-form>
       <p class="auth-link">已有账号？<router-link to="/login">去登录</router-link></p>
+      <div class="admin-entry">
+        <router-link to="/admin/login" class="admin-link">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" fill="currentColor"/>
+            <path fill-rule="evenodd" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.32V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.32-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.32V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.32 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.32 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.32 1z" clip-rule="evenodd" fill="currentColor"/>
+          </svg>
+          管理员登录
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -195,4 +204,24 @@ async function handleRegister() {
 }
 
 .auth-link a:hover { text-decoration: underline; }
+
+.admin-entry {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-text-muted);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.admin-link:hover {
+  color: var(--c-primary);
+}
 </style>
