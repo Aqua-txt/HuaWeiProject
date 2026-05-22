@@ -19,6 +19,7 @@ out/
 .claude/
 .trae/
 .codeartsdoer/
+.arts/
 *.swp
 *.swo
 
