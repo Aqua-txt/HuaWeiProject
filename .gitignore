@@ -17,8 +17,13 @@ out/
 .idea/
 .vscode/
 .claude/
+.trae/
+.codeartsdoer/
 *.swp
 *.swo
+
+# Skills & AI tools
+skills/
 
 # OS
 .DS_Store

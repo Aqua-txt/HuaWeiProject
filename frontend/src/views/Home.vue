@@ -47,8 +47,13 @@
       </div>
     </div>
 
+    <div v-if="loading && products.length === 0" class="loading-state">
+      <div class="spinner"></div>
+      <p>正在加载首页商品...</p>
+    </div>
+
     <!-- Product Grid -->
-    <div v-if="products.length > 0" class="product-grid">
+    <div v-else-if="products.length > 0" class="product-grid">
       <article v-for="(p, i) in products" :key="p.id" class="product-card"
         :style="{ animationDelay: `${i * 0.04}s` }"
         @click="openProductDetail(p.id)">
@@ -134,6 +139,10 @@ const page = ref(1)
 const perPage = ref(24)
 const total = ref(0)
 const selectedProductId = ref(null)
+const loading = ref(false)
+
+let latestFetchId = 0
+let retryTimer = null
 
 const categories = [
   { value: '', label: '全部', emoji: '🏠' },
@@ -162,7 +171,9 @@ function formatTime(t) {
   return d.toLocaleDateString()
 }
 
-async function fetchProducts() {
+async function fetchProducts({ allowRetry = true } = {}) {
+  const fetchId = ++latestFetchId
+  loading.value = true
   try {
     const res = await getProducts({
       page: page.value,
@@ -171,9 +182,24 @@ async function fetchProducts() {
       category: category.value,
       sort: sort.value,
     })
+    if (fetchId !== latestFetchId) return
     products.value = res.data.products
     total.value = res.data.total
-  } catch {}
+  } catch (error) {
+    if (fetchId !== latestFetchId) return
+    console.error('Failed to fetch products:', error)
+    if (allowRetry) {
+      if (retryTimer) clearTimeout(retryTimer)
+      retryTimer = setTimeout(() => {
+        retryTimer = null
+        fetchProducts({ allowRetry: false })
+      }, 300)
+    }
+  } finally {
+    if (fetchId === latestFetchId) {
+      loading.value = false
+    }
+  }
 }
 
 function doSearch() {
@@ -222,6 +248,7 @@ watch(
 
 onBeforeUnmount(() => {
   document.body.style.overflow = ''
+  if (retryTimer) clearTimeout(retryTimer)
 })
 
 onMounted(() => { fetchProducts() })
@@ -464,6 +491,29 @@ onMounted(() => { fetchProducts() })
 }
 
 /* Product Grid */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  color: var(--c-text-muted);
+  gap: 14px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(91, 141, 239, 0.18);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .product-grid {
   column-count: 6;
   column-gap: 18px;

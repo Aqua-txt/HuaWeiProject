@@ -67,11 +67,9 @@
         </div>
       </div>
     </header>
-    <main class="layout-main" :class="{ 'layout-main-wide': ['/wanteds', '/wanted/create', '/home'].includes($route.path) }">
-      <router-view v-slot="{ Component }">
-        <transition name="page" mode="out-in">
-          <component :is="Component" />
-        </transition>
+    <main class="layout-main" :class="{ 'layout-main-wide': isWideLayout }">
+      <router-view v-slot="{ Component, route }">
+        <component :is="Component" :key="route.fullPath" />
       </router-view>
     </main>
   </div>
@@ -79,16 +77,19 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../store'
 import { getUnreadCount } from '../api/chat'
 import { List } from '@element-plus/icons-vue'
 import { getUploadUrl } from '../utils/url'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const unreadCount = ref(0)
 
+const wideLayoutPaths = ['/wanteds', '/wanted/create', '/home']
+const isWideLayout = computed(() => wideLayoutPaths.includes(route.path))
 
 const avatarUrl = computed(() => {
   const avatar = userStore.user?.avatar
@@ -286,19 +287,4 @@ onUnmounted(() => {
   padding-right: 8px;
 }
 
-/* Page transition */
-.page-enter-active {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.page-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
 </style>
