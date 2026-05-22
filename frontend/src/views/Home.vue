@@ -3,8 +3,14 @@
     <!-- Hero / Search -->
     <div class="search-hero">
       <div class="search-glow"></div>
-      <h1 class="hero-title">发现身边的<span class="highlight">好物</span></h1>
-      <p class="hero-sub">教材、数码、生活用品 — 在校园集市找到你需要的</p>
+      <h1 class="hero-title">
+        <span class="hero-line">发现身边的</span>
+        <span class="highlight-wrap">
+          <span class="highlight">好物</span>
+          <span class="highlight-underline"></span>
+        </span>
+      </h1>
+      <p class="hero-sub">教材 · 数码 · 生活用品 — 在校园集市找到你需要的</p>
       <div class="search-box">
         <el-input v-model="keyword" placeholder="搜索商品..." size="large" clearable
           :prefix-icon="Search" @keyup.enter="doSearch" @clear="doSearch"
@@ -24,11 +30,14 @@
       </div>
       <div class="filter-actions">
         <router-link to="/wanteds" class="wanted-link">
-          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 21l-4.35-4.35"/>
+            <path d="M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/>
+            <path d="M8 11h6" class="wanted-plus-h"/>
+            <path d="M11 8v6" class="wanted-plus-v"/>
           </svg>
-          求购专区
+          <span class="wanted-text">求购专区</span>
+          <span class="wanted-badge">NEW</span>
         </router-link>
         <el-select v-model="sort" style="width:168px" @change="doSearch" class="sort-select">
           <el-option label="最新发布" value="latest" />
@@ -222,41 +231,89 @@ onMounted(() => { fetchProducts() })
 /* Hero */
 .search-hero {
   text-align: center;
-  padding: 32px 0 24px;
+  padding: 40px 0 28px;
   position: relative;
 }
 
 .search-glow {
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(91,141,239,0.08) 0%, transparent 70%);
-  top: -80px;
+  background: radial-gradient(circle, rgba(91,141,239,0.07) 0%, rgba(6,214,160,0.03) 40%, transparent 70%);
+  top: -100px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.7; transform: translateX(-50%) scale(1.08); }
 }
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
   color: var(--c-text);
   margin-bottom: 8px;
   letter-spacing: -0.5px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hero-line {
+  display: inline;
+}
+
+.highlight-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero-title .highlight {
-  background: linear-gradient(135deg, #5B8DEF, #06D6A0);
+  background: linear-gradient(135deg, #5B8DEF 0%, #06D6A0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+
+.highlight-underline {
+  position: absolute;
+  bottom: -2px;
+  left: -4px;
+  right: -4px;
+  height: 8px;
+  background: linear-gradient(135deg, rgba(91,141,239,0.25), rgba(6,214,160,0.25));
+  border-radius: 4px;
+  z-index: -1;
+  animation: underlineGrow 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+@keyframes underlineGrow {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 .hero-sub {
   font-size: 15px;
   color: var(--c-text-muted);
   margin-bottom: 24px;
+  letter-spacing: 1.5px;
+  font-weight: 400;
 }
 
 .search-box {
@@ -341,19 +398,65 @@ onMounted(() => { fetchProducts() })
   gap: 6px;
   padding: 8px 16px;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(6,214,160,0.1), rgba(6,214,160,0.05));
+  background: linear-gradient(135deg, rgba(6,214,160,0.12), rgba(91,141,239,0.08));
   color: var(--c-secondary);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.25s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(6,214,160,0.2);
+}
+
+.wanted-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(6,214,160,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .wanted-link:hover {
-  background: var(--c-secondary);
+  background: linear-gradient(135deg, var(--c-secondary), #04B888);
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6,214,160,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6,214,160,0.35);
+  border-color: transparent;
+}
+
+.wanted-link:hover::before {
+  opacity: 1;
+}
+
+.wanted-link:hover .wanted-badge {
+  background: rgba(255,255,255,0.25);
+  color: white;
+}
+
+.wanted-link:hover svg .wanted-plus-h,
+.wanted-link:hover svg .wanted-plus-v {
+  stroke: white;
+}
+
+.wanted-text {
+  position: relative;
+  z-index: 1;
+}
+
+.wanted-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(6,214,160,0.15);
+  color: var(--c-secondary);
+  line-height: 1.4;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
 }
 
 .sort-select :deep(.el-input__wrapper) {
