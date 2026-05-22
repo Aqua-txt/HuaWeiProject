@@ -22,8 +22,6 @@ out/
 *.swp
 *.swo
 
-# Skills & AI tools
-skills/
 
 # OS
 .DS_Store
